@@ -44,6 +44,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.passay:passay:1.0'
+    implementation 'com.google.guava:guava:32.1.2-jre'
+    implementation 'io.vavr:vavr:0.10.4'
 }
 
 dependencyManagement {

@@ -32,4 +32,8 @@ public class UserManagementService {
 
 		return UserDTOMapper.toDto(savedUser);
 	}
+
+	public User saveUser(User user) {
+		return userRepository.save(user);
+	}
 }

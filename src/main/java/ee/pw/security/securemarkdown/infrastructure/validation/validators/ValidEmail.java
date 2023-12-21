@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ValidEmail.RegisterEmailValidator.class)
 public @interface ValidEmail {
-	String message() default "";
+	String message() default "User with such email already exist";
 
 	Class<?>[] groups() default {};
 
@@ -26,9 +26,11 @@ public @interface ValidEmail {
 		implements ConstraintValidator<ValidEmail, String> {
 
 		private final UserRepository userRepository;
+		private String message;
 
 		@Override
 		public void initialize(ValidEmail constraintAnnotation) {
+			this.message = constraintAnnotation.message();
 			ConstraintValidator.super.initialize(constraintAnnotation);
 		}
 
@@ -41,10 +43,7 @@ public @interface ValidEmail {
 			}
 
 			context
-				.buildConstraintViolationWithTemplate(
-					"User with such email already exist"
-				)
-				.addPropertyNode("email")
+				.buildConstraintViolationWithTemplate(message)
 				.addConstraintViolation();
 
 			return false;

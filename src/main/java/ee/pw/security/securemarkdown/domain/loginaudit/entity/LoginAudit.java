@@ -1,9 +1,12 @@
 package ee.pw.security.securemarkdown.domain.loginaudit.entity;
 
+import ee.pw.security.securemarkdown.domain.loginaudit.enums.FailureReason;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.validation.constants.ValidationConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,7 +44,8 @@ public class LoginAudit {
 	private boolean isSuccessful;
 
 	@Column(name = "failure_reason")
-	private String failureReason;
+	@Enumerated(EnumType.STRING)
+	private FailureReason failureReason;
 
 	@Column(name = "ip_address", length = ValidationConstants.FIVE_BITS)
 	private String ipAddress;

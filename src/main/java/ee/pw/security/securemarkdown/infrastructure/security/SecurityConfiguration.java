@@ -1,18 +1,19 @@
 package ee.pw.security.securemarkdown.infrastructure.security;
 
-import jakarta.servlet.http.HttpServletRequest;
+import ee.pw.security.securemarkdown.domain.loginaudit.data.LoginAuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationDetailsSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
 @Configuration
@@ -21,15 +22,16 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-	//private final AuthenticationFailureHandler authenticationFailureHandler;
+	private final AuthenticationFailureHandler authenticationFailureHandler;
 	private final CsrfTokenRepository csrfTokenRepository;
+	private final LoginAuditService loginAuditService;
 
 	@Bean
 	public SecurityFilterChain configureSecurityFilterChain(
 		HttpSecurity httpSecurity
 	) throws Exception {
 		httpSecurity.cors(Customizer.withDefaults());
-		// httpSecurity.httpBasic(AbstractHttpConfigurer::disable); - enabled for postman requests
+		httpSecurity.httpBasic(Customizer.withDefaults());
 
 		httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
 			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
@@ -42,11 +44,22 @@ public class SecurityConfiguration {
 
 		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {
 			httpSecurityFormLoginConfigurer.loginProcessingUrl("/api/auth/login");
+			httpSecurityFormLoginConfigurer.authenticationDetailsSource(
+				new WebAuthenticationDetailsSource()
+			);
+			httpSecurityFormLoginConfigurer.successHandler(
+				(
+					(request, response, authentication) -> {
+						loginAuditService.saveLoginAuthenticationLog(request, true);
+						response.setStatus(HttpStatus.OK.value());
+					}
+				)
+			);
 			httpSecurityFormLoginConfigurer.usernameParameter("email");
 			httpSecurityFormLoginConfigurer.passwordParameter("password");
-//	TODO		httpSecurityFormLoginConfigurer.failureHandler(
-//				authenticationFailureHandler
-//			);
+			httpSecurityFormLoginConfigurer.failureHandler(
+				authenticationFailureHandler
+			);
 		});
 
 		httpSecurity.logout(httpSecurityLogoutConfigurer -> {
@@ -70,18 +83,26 @@ public class SecurityConfiguration {
 				.permitAll();
 		});
 
-		httpSecurity.authorizeHttpRequests(requestMatcherRegistry -> {
+		httpSecurity.authorizeHttpRequests(requestMatcherRegistry ->
 			requestMatcherRegistry
 				.requestMatchers(
 					"/api/auth/reset-password",
 					"/api/auth/confirm-reset-password"
 				)
-				.permitAll();
-		});
+				.permitAll()
+		);
 
-		httpSecurity.authorizeHttpRequests(requestMatcherRegistry -> {
-			requestMatcherRegistry.anyRequest().authenticated();
-		});
+		httpSecurity.authorizeHttpRequests(requestMatcherRegistry ->
+			requestMatcherRegistry.anyRequest().authenticated()
+		);
+
+		httpSecurity.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
+			httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(
+				(request, response, accessDeniedException) -> {
+					new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+				}
+			)
+		);
 
 		return httpSecurity.build();
 	}

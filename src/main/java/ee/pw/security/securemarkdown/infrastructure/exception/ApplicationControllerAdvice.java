@@ -2,6 +2,7 @@ package ee.pw.security.securemarkdown.infrastructure.exception;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -51,5 +52,23 @@ class ApplicationControllerAdvice {
 			);
 
 		return new ResponseEntity<>(errorsMap, HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(RuntimeException.class)
+	public ResponseEntity<ErrorResponse> handleRunTimeExceptionResponse(
+		RuntimeException exception
+	) {
+		ErrorResponse errorResponse = ErrorResponse
+			.builder()
+			.timeStamp(LocalDateTime.now())
+			.errorCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+			.message(exception.getMessage())
+			.throwableName(exception.getClass().getName())
+			.build();
+
+		return new ResponseEntity<>(
+			errorResponse,
+			HttpStatus.INTERNAL_SERVER_ERROR
+		);
 	}
 }

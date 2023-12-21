@@ -1,9 +1,13 @@
 package ee.pw.security.securemarkdown.domain.note.entity;
 
+import ee.pw.security.securemarkdown.domain.note.enums.NoteVisibility;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
+import ee.pw.security.securemarkdown.infrastructure.validation.annotation.Password;
 import ee.pw.security.securemarkdown.infrastructure.validation.constants.ValidationConstants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,13 +24,14 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity(name = "notes")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-@Builder
+@Builder(toBuilder = true)
 public class Note {
 
 	@Id
@@ -48,8 +53,13 @@ public class Note {
 	)
 	private String content;
 
-	@Column(name = "is_public", nullable = false)
-	private boolean isPublic;
+	@Column(name = "note_visibility", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private NoteVisibility noteVisibility;
+
+	@Password
+	@Column(name = "note_password")
+	private String notePassword = null;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@EqualsAndHashCode.Exclude
@@ -57,8 +67,10 @@ public class Note {
 	private User owner;
 
 	@CreationTimestamp
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDateTime creationTimeStamp;
 
 	@UpdateTimestamp
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 	private LocalDateTime updateTimeStamp;
 }

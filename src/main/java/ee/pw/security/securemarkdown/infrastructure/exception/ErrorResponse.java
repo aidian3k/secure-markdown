@@ -18,5 +18,5 @@ public class ErrorResponse {
 	private LocalDateTime timeStamp;
 	private Long httpCode;
 	private String message;
-	private String errorCode;
+	private int errorCode;
 }
