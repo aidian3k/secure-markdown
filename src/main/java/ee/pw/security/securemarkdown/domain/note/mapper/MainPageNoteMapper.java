@@ -1,7 +1,6 @@
 package ee.pw.security.securemarkdown.domain.note.mapper;
 
 import ee.pw.security.securemarkdown.domain.note.dto.response.MainPageNoteDTO;
-import ee.pw.security.securemarkdown.domain.note.dto.response.NoteDTO;
 import ee.pw.security.securemarkdown.domain.note.entity.Note;
 import lombok.experimental.UtilityClass;
 
