@@ -1,6 +1,7 @@
 package ee.pw.security.securemarkdown.domain.note.data;
 
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteCreationDTO;
+import ee.pw.security.securemarkdown.domain.note.dto.request.NoteViewDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.MainPageDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.NoteDTO;
 import ee.pw.security.securemarkdown.domain.note.entity.Note;
@@ -11,10 +12,12 @@ import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.security.EncryptionTools;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class NoteService {
 	private final CurrentUserService currentUserService;
 	private final PasswordEncoder passwordEncoder;
 
+	@Transactional
 	public NoteDTO attachNoteToUser(NoteCreationDTO noteCreationDTO) {
 		User currentUser = currentUserService.getCurrentUser();
 
@@ -93,7 +97,8 @@ public class NoteService {
 			.build();
 	}
 
-	private NoteDTO saveNoteAndReturnNoteDTO(Note noteToSave, User user) {
+	@Transactional
+	public NoteDTO saveNoteAndReturnNoteDTO(Note noteToSave, User user) {
 		Note savedNote = noteRepository.save(noteToSave);
 		user.getNotes().add(savedNote);
 		userFacade.saveUser(user);
@@ -101,8 +106,10 @@ public class NoteService {
 		return NoteDTO
 			.builder()
 			.content(savedNote.getContent())
+			.ownerUsername(savedNote.getOwner().getUsername())
 			.title(savedNote.getTitle())
-			.updateTimeStamp(savedNote.getUpdateTimeStamp())
+			.updateTimeStamp(LocalDateTime.now())
+			.noteVisibility(savedNote.getNoteVisibility())
 			.build();
 	}
 
@@ -114,6 +121,25 @@ public class NoteService {
 					String.format("Note with id=[%d] has not been found", noteId)
 				)
 			);
+	}
+
+	public NoteDTO getNoteDTOByViewRequest(NoteViewDTO noteViewDTO) {
+		Note note = getNoteById(noteViewDTO.getNoteId());
+
+		if (note.getNoteVisibility().equals(NoteVisibility.ENCRYPTED)) {
+			return NoteDTOMapper
+				.toDto(note)
+				.toBuilder()
+				.content(
+					EncryptionTools.decodeStringFromAESEncryption(
+						note.getContent(),
+						noteViewDTO.getPassword()
+					)
+				)
+				.build();
+		}
+
+		return NoteDTOMapper.toDto(note);
 	}
 
 	public NoteDTO getNoteDTOById(Long noteId) {

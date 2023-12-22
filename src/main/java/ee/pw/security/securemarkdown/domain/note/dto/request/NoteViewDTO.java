@@ -12,6 +12,5 @@ public class NoteViewDTO {
 	@Positive
 	private Long noteId;
 
-	@NotBlank
 	private String password;
 }

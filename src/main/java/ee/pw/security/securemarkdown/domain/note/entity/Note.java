@@ -1,5 +1,6 @@
 package ee.pw.security.securemarkdown.domain.note.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import ee.pw.security.securemarkdown.domain.note.enums.NoteVisibility;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.validation.annotation.Password;
@@ -64,6 +65,7 @@ public class Note {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
+	@JsonIgnore
 	private User owner;
 
 	@CreationTimestamp

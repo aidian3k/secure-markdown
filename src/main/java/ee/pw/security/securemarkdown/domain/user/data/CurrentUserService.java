@@ -13,12 +13,10 @@ public class CurrentUserService {
 	private final UserFinderService userFinderService;
 
 	public User getCurrentUser() {
-		UserPrincipal principal = (UserPrincipal) SecurityContextHolder
+		return (User) SecurityContextHolder
 			.getContext()
 			.getAuthentication()
 			.getPrincipal();
-
-		return userFinderService.getUserByEmail(principal.getName());
 	}
 
 	public Long getCurrentUserId() {

@@ -44,7 +44,7 @@ public class User extends AppUserDetails {
 	@Column(name = "isUsingTwoFactorAuthentication", nullable = false)
 	private boolean isUsingTwoFactorAuthentication = true;
 
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "owner")
 	@Builder.Default
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude

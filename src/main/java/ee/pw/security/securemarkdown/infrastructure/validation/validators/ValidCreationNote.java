@@ -19,11 +19,9 @@ import org.springframework.util.StringUtils;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(
-	validatedBy = ValidCreationNote.ValidCreationNoteValidator.class
-)
+@Constraint(validatedBy = ValidCreationNote.ValidCreationNoteValidator.class)
 public @interface ValidCreationNote {
-	String message() default "Confirmation password does not match first password";
+	String message() default "ss";
 
 	Class<?>[] groups() default {};
 
@@ -52,9 +50,9 @@ public @interface ValidCreationNote {
 					.buildConstraintViolationWithTemplate(
 						"Password cannot be null when note is encrypted!"
 					)
-					.addPropertyNode("password")
+					.addPropertyNode("notePassword")
 					.addConstraintViolation();
-				finalResult = false;
+				return false;
 			}
 
 			if (
@@ -69,17 +67,17 @@ public @interface ValidCreationNote {
 				);
 
 				if (!result.isValid()) {
-					finalResult = finalResult & result.isValid();
 					context
 						.buildConstraintViolationWithTemplate(
 							"Password for note is too week - consider using better password"
 						)
 						.addPropertyNode("notePassword")
 						.addConstraintViolation();
+					return false;
 				}
 			}
 
-			return finalResult;
+			return true;
 		}
 	}
 }

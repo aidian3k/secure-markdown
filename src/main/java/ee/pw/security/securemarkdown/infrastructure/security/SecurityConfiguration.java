@@ -19,7 +19,11 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableMethodSecurity
+@EnableMethodSecurity(
+	securedEnabled = true,
+	prePostEnabled = true,
+	proxyTargetClass = true
+)
 public class SecurityConfiguration {
 
 	private final AuthenticationFailureHandler authenticationFailureHandler;
@@ -34,12 +38,13 @@ public class SecurityConfiguration {
 		httpSecurity.httpBasic(Customizer.withDefaults());
 
 		httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
-			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
-				"/api/auth/login",
-				"/api/auth/create-user",
-				"api/auth/reset-password"
-			);
-			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
+//			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
+//				"/api/auth/login",
+//				"/api/auth/create-user",
+//				"api/auth/reset-password"
+//			);
+//			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
+			httpSecurityCsrfConfigurer.disable();
 		});
 
 		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {

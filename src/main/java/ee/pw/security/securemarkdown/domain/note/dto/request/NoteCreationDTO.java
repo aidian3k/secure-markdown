@@ -32,6 +32,5 @@ public class NoteCreationDTO {
 	@NotNull
 	private NoteVisibility noteVisibility;
 
-	@ValidPassword
 	String notePassword;
 }

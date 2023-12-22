@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +32,10 @@ class NoteController {
 		return new ResponseEntity<>(noteService.getMainPageNotes(), HttpStatus.OK);
 	}
 
-	@PostMapping("/save")
+	@PostMapping(
+		value = "/save-note",
+		produces = MediaType.APPLICATION_JSON_VALUE
+	)
 	public ResponseEntity<NoteDTO> handleNewNoteRequest(
 		@RequestBody @Valid NoteCreationDTO noteCreationDTO
 	) {
@@ -42,12 +46,12 @@ class NoteController {
 	}
 
 	@GetMapping
-	@PreAuthorize("noteSecurityValidator.hasUserAccessToNote(noteViewDTO)")
+	@PreAuthorize("{@noteSecurityValidator.hasUserAccessToNote(#noteViewDTO)}")
 	public ResponseEntity<NoteDTO> handleSingleNoteRequest(
 		NoteViewDTO noteViewDTO
 	) {
 		return new ResponseEntity<>(
-			noteService.getNoteDTOById(noteViewDTO.getNoteId()),
+			noteService.getNoteDTOByViewRequest(noteViewDTO),
 			HttpStatus.OK
 		);
 	}

@@ -14,7 +14,7 @@ import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
-class NoteSecurityValidator {
+public class NoteSecurityValidator {
 
 	private final CurrentUserService currentUserService;
 	private final NoteRepository noteRepository;
@@ -31,7 +31,7 @@ class NoteSecurityValidator {
 			.orElseThrow(() ->
 				new GenericAppException(
 					String.format(
-						"Access to note with id=[%d]",
+						"Access denied to note with id=[%d]",
 						noteViewRequest.getNoteId()
 					)
 				)
@@ -58,8 +58,8 @@ class NoteSecurityValidator {
 		}
 
 		return passwordEncoder.matches(
-			foundNote.getNotePassword(),
-			noteViewRequest.getPassword()
+			noteViewRequest.getPassword(),
+			foundNote.getNotePassword()
 		);
 	}
 }
