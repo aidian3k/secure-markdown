@@ -18,4 +18,7 @@ public interface LoginAuditRepository extends JpaRepository<LoginAudit, Long> {
 		Long userId,
 		LocalDateTime creationDate
 	);
+
+	@Query("select la from login_audit la where la.user.id=:userId and la.isSuccessful=true")
+	List<LoginAudit> getLoginAuditBySuccessfulIsTrue(Long userId);
 }

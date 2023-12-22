@@ -7,14 +7,19 @@ import ee.pw.security.securemarkdown.domain.loginaudit.enums.FailureReason;
 import ee.pw.security.securemarkdown.domain.user.data.UserFinderService;
 import ee.pw.security.securemarkdown.domain.user.data.UserRepository;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
+import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
+import ee.pw.security.securemarkdown.infrastructure.mail.MailService;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ public class LoginAuditService {
 	private final LoginAuditRepository loginAuditRepository;
 	private final UserRepository userRepository;
 	private final UserFinderService userFinderService;
+	private final MailService mailService;
 
 	public void saveLoginAuthenticationLog(
 		HttpServletRequest request,
@@ -35,41 +41,67 @@ public class LoginAuditService {
 			request
 		);
 
-		if (
-			emailEither.isLeft() ||
-			userRepository.findByEmail(emailEither.get()).isEmpty()
-		) {
+		if (emailEither.isLeft()) {
 			return;
 		}
+
+		final String email = emailEither.get();
+		Optional<User> optionalUser = userRepository.findByEmail(email);
 
 		LoginAudit loginAudit = LoginAudit
 			.builder()
 			.failureReason(FailureReason.AUTHENTICATION)
 			.location(request.getHeader(LOCATION_PARAM))
-			.isSuccessful(isFailure)
+			.isSuccessful(!isFailure)
 			.ipAddress(request.getRemoteAddr())
-			.user(userRepository.findByEmail(emailEither.get()).get())
+			.user(optionalUser.orElse(null))
 			.build();
 
 		loginAuditRepository.save(loginAudit);
+
+		if (optionalUser.isEmpty()) {
+			return;
+		}
+
+		handleUserLoginFromDifferentLocation(request, emailEither.get());
 	}
 
 	public Either<Throwable, String> getEmailParameterFromRequest(
 		HttpServletRequest request
 	) {
-		return Try
-			.of(() -> {
-				String requestPayload = request
-					.getReader()
-					.lines()
-					.reduce("", (accumulator, actual) -> accumulator + actual);
+		return Try.of(() -> request.getParameterMap().get("email")[0]).toEither();
+	}
 
-				ObjectMapper objectMapper = new ObjectMapper();
-				JsonNode jsonNode = objectMapper.readTree(requestPayload);
+	public void handleUserLoginFromDifferentLocation(
+		HttpServletRequest request,
+		String userEmail
+	) {
+		String location = request.getHeader(LOCATION_PARAM);
+		List<LoginAudit> successfulLoginAttempts = getAllSuccessLoginAttempts(
+			userEmail
+		);
+		if (CollectionUtils.isEmpty(successfulLoginAttempts)) {
+			return;
+		}
 
-				return jsonNode.get("email").asText();
-			})
-			.toEither();
+		Optional<LoginAudit> audit = successfulLoginAttempts
+			.stream()
+			.filter(loginAudit -> loginAudit.getLocation().equals(location))
+			.findAny();
+
+		if (audit.isPresent()) {
+			return;
+		}
+
+		try {
+			mailService.sendEmail(
+				userEmail,
+				"Attempt to login from different location",
+				"There was an attempt to login from different location: " + location
+			);
+		} catch (MessagingException messagingException) {
+			log.error("Error while trying to send the email");
+		}
 	}
 
 	public List<LoginAudit> getFailedLoginLogsFromLastMinute(String userEmail) {
@@ -79,5 +111,11 @@ public class LoginAuditService {
 			user.getId(),
 			LocalDateTime.now().minusMinutes(1)
 		);
+	}
+
+	private List<LoginAudit> getAllSuccessLoginAttempts(String userEmail) {
+		User user = userFinderService.getUserByEmail(userEmail);
+
+		return loginAuditRepository.getLoginAuditBySuccessfulIsTrue(user.getId());
 	}
 }

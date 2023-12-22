@@ -55,7 +55,7 @@ public class SecurityConfiguration {
 			httpSecurityFormLoginConfigurer.successHandler(
 				(
 					(request, response, authentication) -> {
-						loginAuditService.saveLoginAuthenticationLog(request, true);
+						loginAuditService.saveLoginAuthenticationLog(request, false);
 						response.setStatus(HttpStatus.OK.value());
 					}
 				)

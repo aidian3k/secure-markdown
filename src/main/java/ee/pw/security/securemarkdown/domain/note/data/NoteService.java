@@ -1,6 +1,7 @@
 package ee.pw.security.securemarkdown.domain.note.data;
 
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteCreationDTO;
+import ee.pw.security.securemarkdown.domain.note.dto.request.NoteEditRequest;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteViewDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.MainPageDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.NoteDTO;
@@ -13,6 +14,7 @@ import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.security.EncryptionTools;
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,32 +36,46 @@ public class NoteService {
 		User currentUser = currentUserService.getCurrentUser();
 
 		if (noteCreationDTO.getNoteVisibility().equals(NoteVisibility.ENCRYPTED)) {
-			Note securedNote = Note
-				.builder()
-				.content(
-					EncryptionTools.encodeStringWithKeyWithAES(
-						noteCreationDTO.getContent(),
-						noteCreationDTO.getNotePassword()
-					)
-				)
-				.title(noteCreationDTO.getTitle())
-				.noteVisibility(NoteVisibility.ENCRYPTED)
-				.notePassword(passwordEncoder.encode(noteCreationDTO.getNotePassword()))
-				.owner(currentUser)
-				.build();
+			Note securedNote = getSecuredNote(noteCreationDTO, currentUser);
 
 			return saveNoteAndReturnNoteDTO(securedNote, currentUser);
 		}
 
-		Note note = Note
+		Note note = makeNoteFromCreationDTO(noteCreationDTO, currentUser);
+
+		return saveNoteAndReturnNoteDTO(note, currentUser);
+	}
+
+	private static Note makeNoteFromCreationDTO(
+		NoteCreationDTO noteCreationDTO,
+		User currentUser
+	) {
+		return Note
 			.builder()
 			.content(noteCreationDTO.getContent())
 			.title(noteCreationDTO.getTitle())
 			.noteVisibility(noteCreationDTO.getNoteVisibility())
 			.owner(currentUser)
 			.build();
+	}
 
-		return saveNoteAndReturnNoteDTO(note, currentUser);
+	private Note getSecuredNote(
+		NoteCreationDTO noteCreationDTO,
+		User currentUser
+	) {
+		return Note
+			.builder()
+			.content(
+				EncryptionTools.encodeStringWithKeyWithAES(
+					noteCreationDTO.getContent(),
+					noteCreationDTO.getNotePassword()
+				)
+			)
+			.title(noteCreationDTO.getTitle())
+			.noteVisibility(NoteVisibility.ENCRYPTED)
+			.notePassword(passwordEncoder.encode(noteCreationDTO.getNotePassword()))
+			.owner(currentUser)
+			.build();
 	}
 
 	public MainPageDTO getMainPageNotes() {
@@ -144,5 +160,45 @@ public class NoteService {
 
 	public NoteDTO getNoteDTOById(Long noteId) {
 		return NoteDTOMapper.toDto(getNoteById(noteId));
+	}
+
+	@Transactional
+	public NoteDTO editAttachedNote(
+		NoteViewDTO noteViewDTO,
+		NoteEditRequest noteEditRequest
+	) {
+		User currentUser = currentUserService.getCurrentUser();
+		Note note = makeNoteFromEditDto(noteViewDTO, noteEditRequest);
+
+		return saveNoteAndReturnNoteDTO(note, currentUser);
+	}
+
+	private Note makeNoteFromEditDto(
+		NoteViewDTO noteViewDTO,
+		NoteEditRequest noteEditRequest
+	) {
+		return Note
+			.builder()
+			.id(noteViewDTO.getNoteId())
+			.content(noteEditRequest.getContent())
+			.title(noteEditRequest.getTitle())
+			.noteVisibility(noteEditRequest.getNoteVisibility())
+			.owner(currentUserService.getCurrentUser())
+			.notePassword(noteEditRequest.getNotePassword())
+			.build();
+	}
+
+	@Transactional
+	public void deleteAttachedNote(NoteViewDTO noteViewDTO) {
+		User currentUser = currentUserService.getCurrentUser();
+		noteRepository.deleteById(noteViewDTO.getNoteId());
+		currentUser.setNotes(
+			currentUser
+				.getNotes()
+				.stream()
+				.filter(note -> !note.getId().equals(noteViewDTO.getNoteId()))
+				.collect(Collectors.toSet())
+		);
+		userFacade.saveUser(currentUser);
 	}
 }
