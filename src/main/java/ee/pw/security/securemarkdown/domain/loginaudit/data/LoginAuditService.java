@@ -57,13 +57,12 @@ public class LoginAuditService {
 			.user(optionalUser.orElse(null))
 			.build();
 
-		loginAuditRepository.save(loginAudit);
-
 		if (optionalUser.isEmpty()) {
 			return;
 		}
 
 		handleUserLoginFromDifferentLocation(request, emailEither.get());
+		loginAuditRepository.save(loginAudit);
 	}
 
 	public Either<Throwable, String> getEmailParameterFromRequest(

@@ -12,4 +12,7 @@ public class UserFacade {
 
 	@Delegate
 	private final UserManagementService userManagementService;
+
+	@Delegate
+	private final UserFinderService userFinderService;
 }

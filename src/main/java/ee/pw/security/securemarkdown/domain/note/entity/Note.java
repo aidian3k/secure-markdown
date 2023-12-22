@@ -1,10 +1,12 @@
 package ee.pw.security.securemarkdown.domain.note.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ee.pw.security.securemarkdown.domain.media.entity.Media;
 import ee.pw.security.securemarkdown.domain.note.enums.NoteVisibility;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.validation.annotation.Password;
 import ee.pw.security.securemarkdown.infrastructure.validation.constants.ValidationConstants;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,8 +16,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -67,6 +72,15 @@ public class Note {
 	@ToString.Exclude
 	@JsonIgnore
 	private User owner;
+
+	@OneToMany(
+		fetch = FetchType.LAZY,
+		cascade = CascadeType.ALL,
+		mappedBy = "note"
+	)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	private Set<Media> medias = new HashSet<>();
 
 	@CreationTimestamp
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

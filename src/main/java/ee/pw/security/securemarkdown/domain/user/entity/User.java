@@ -2,6 +2,8 @@ package ee.pw.security.securemarkdown.domain.user.entity;
 
 import ee.pw.security.securemarkdown.domain.loginaudit.entity.LoginAudit;
 import ee.pw.security.securemarkdown.domain.note.entity.Note;
+import ee.pw.security.securemarkdown.domain.resetpassword.ResetPassword;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -44,7 +46,11 @@ public class User extends AppUserDetails {
 	@Column(name = "isUsingTwoFactorAuthentication", nullable = false)
 	private boolean isUsingTwoFactorAuthentication = true;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "owner")
+	@OneToMany(
+		fetch = FetchType.EAGER,
+		mappedBy = "owner",
+		cascade = CascadeType.ALL
+	)
 	@Builder.Default
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
@@ -55,6 +61,16 @@ public class User extends AppUserDetails {
 	@EqualsAndHashCode.Exclude
 	@ToString.Exclude
 	private Set<LoginAudit> loginAudits = new HashSet<>();
+
+	@OneToMany(
+		fetch = FetchType.EAGER,
+		mappedBy = "user",
+		cascade = CascadeType.ALL
+	)
+	@Builder.Default
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	private Set<ResetPassword> resetPasswords = new HashSet<>();
 
 	@CreationTimestamp
 	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
