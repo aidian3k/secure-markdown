@@ -1,0 +1,6 @@
+version: "3.0"
+
+services:
+  secure-markdown-backend:
+    container_name: secure-markdown-backend
+    build: .

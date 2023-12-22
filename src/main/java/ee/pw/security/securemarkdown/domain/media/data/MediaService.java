@@ -2,15 +2,14 @@ package ee.pw.security.securemarkdown.domain.media.data;
 
 import ee.pw.security.securemarkdown.domain.media.entity.Media;
 import ee.pw.security.securemarkdown.domain.media.enums.MediaType;
-import ee.pw.security.securemarkdown.domain.note.data.NoteService;
 import ee.pw.security.securemarkdown.domain.note.entity.Note;
-import ee.pw.security.securemarkdown.domain.user.data.CurrentUserService;
-import java.io.IOException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,14 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class MediaService {
 
 	private final MediaRepository mediaRepository;
-	private final NoteService noteService;
-	private final CurrentUserService currentUserService;
 
 	public void attachMediasToPhotos(
 		List<MultipartFile> multipartFiles,
-		Long noteId
+		Note note
 	) {
-		Note note = noteService.getNoteById(noteId);
 		List<Media> medias = multipartFiles
 			.stream()
 			.map(multipartFile ->

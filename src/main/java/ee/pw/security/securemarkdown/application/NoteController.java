@@ -1,6 +1,5 @@
 package ee.pw.security.securemarkdown.application;
 
-
 import ee.pw.security.securemarkdown.domain.note.data.NoteService;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteCreationDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteViewDTO;
@@ -15,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -51,20 +51,28 @@ class NoteController {
 		);
 	}
 
-	@DeleteMapping
-	@PreAuthorize("{@noteSecurityValidator.hasUserAccessToNote(#noteViewDTO)}")
-	public ResponseEntity<Void> handleDeleteNoteRequest(NoteViewDTO noteViewDTO) {
-		noteService.deleteAttachedNote(noteViewDTO);
+	@DeleteMapping("/{noteId}")
+	@PreAuthorize(
+		"{@noteSecurityValidator.hasUserAccessToNote(#noteViewDTO, #noteId)}"
+	)
+	public ResponseEntity<Void> handleDeleteNoteRequest(
+		@PathVariable Long noteId,
+		NoteViewDTO noteViewDTO
+	) {
+		noteService.deleteAttachedNote(noteId);
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping
-	@PreAuthorize("{@noteSecurityValidator.hasUserAccessToNote(#noteViewDTO)}")
+	@GetMapping("/{noteId}")
+	@PreAuthorize(
+		"{@noteSecurityValidator.hasUserAccessToNote(#noteViewDTO, #noteId)}"
+	)
 	public ResponseEntity<NoteDTO> handleSingleNoteRequest(
+		@PathVariable Long noteId,
 		NoteViewDTO noteViewDTO
 	) {
 		return new ResponseEntity<>(
-			noteService.getNoteDTOByViewRequest(noteViewDTO),
+			noteService.getNoteDTOByViewRequest(noteViewDTO, noteId),
 			HttpStatus.OK
 		);
 	}

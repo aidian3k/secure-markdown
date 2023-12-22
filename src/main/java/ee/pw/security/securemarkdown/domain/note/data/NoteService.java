@@ -2,7 +2,6 @@ package ee.pw.security.securemarkdown.domain.note.data;
 
 import ee.pw.security.securemarkdown.domain.media.data.MediaService;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteCreationDTO;
-import ee.pw.security.securemarkdown.domain.note.dto.request.NoteEditRequest;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteViewDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.MainPageDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.NoteDTO;
@@ -14,15 +13,16 @@ import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.security.EncryptionTools;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -130,7 +130,7 @@ public class NoteService {
 		User user,
 		List<MultipartFile> multipartFileList
 	) {
-		mediaService.attachMediasToPhotos(multipartFileList, noteToSave.getId());
+		mediaService.attachMediasToPhotos(multipartFileList, noteToSave);
 
 		Note savedNote = noteRepository.save(noteToSave);
 		user.getNotes().add(savedNote);
@@ -157,8 +157,8 @@ public class NoteService {
 			);
 	}
 
-	public NoteDTO getNoteDTOByViewRequest(NoteViewDTO noteViewDTO) {
-		Note note = getNoteById(noteViewDTO.getNoteId());
+	public NoteDTO getNoteDTOByViewRequest(NoteViewDTO noteViewDTO, Long noteId) {
+		Note note = getNoteById(noteId);
 
 		if (note.getNoteVisibility().equals(NoteVisibility.ENCRYPTED)) {
 			return NoteDTOMapper
@@ -180,30 +180,15 @@ public class NoteService {
 		return NoteDTOMapper.toDto(getNoteById(noteId));
 	}
 
-	private Note makeNoteFromEditDto(
-		NoteViewDTO noteViewDTO,
-		NoteEditRequest noteEditRequest
-	) {
-		return Note
-			.builder()
-			.id(noteViewDTO.getNoteId())
-			.content(noteEditRequest.getContent())
-			.title(noteEditRequest.getTitle())
-			.noteVisibility(noteEditRequest.getNoteVisibility())
-			.owner(currentUserService.getCurrentUser())
-			.notePassword(noteEditRequest.getNotePassword())
-			.build();
-	}
-
 	@Transactional
-	public void deleteAttachedNote(NoteViewDTO noteViewDTO) {
+	public void deleteAttachedNote(Long noteId) {
 		User currentUser = currentUserService.getCurrentUser();
-		noteRepository.deleteById(noteViewDTO.getNoteId());
+		noteRepository.deleteById(noteId);
 		currentUser.setNotes(
 			currentUser
 				.getNotes()
 				.stream()
-				.filter(note -> !note.getId().equals(noteViewDTO.getNoteId()))
+				.filter(note -> !note.getId().equals(noteId))
 				.collect(Collectors.toSet())
 		);
 		userFacade.saveUser(currentUser);
