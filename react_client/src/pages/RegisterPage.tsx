@@ -54,7 +54,6 @@ const RegisterRequestValidator = yup.object().shape({
 
 export const RegisterPage: FC = () => {
   const navigate = useNavigate();
-  const [resetPasswordModal, setResetPasswordModal] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const {
