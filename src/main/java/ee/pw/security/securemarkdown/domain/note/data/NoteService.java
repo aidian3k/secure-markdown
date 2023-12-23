@@ -13,15 +13,16 @@ import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.security.EncryptionTools;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,7 @@ public class NoteService {
 	private final CurrentUserService currentUserService;
 	private final PasswordEncoder passwordEncoder;
 	private final MediaService mediaService;
+	private final NoteDTOMapper noteDTOMapper;
 
 	@Transactional
 	public NoteDTO attachNoteToUser(
@@ -97,7 +99,7 @@ public class NoteService {
 				noteRepository
 					.findAllByNoteVisibility(NoteVisibility.PUBLIC)
 					.stream()
-					.map(NoteDTOMapper::toDto)
+					.map(noteDTOMapper::toDto)
 					.toList()
 			)
 			.privateNotes(
@@ -107,7 +109,7 @@ public class NoteService {
 						currentUser.getId()
 					)
 					.stream()
-					.map(NoteDTOMapper::toDto)
+					.map(noteDTOMapper::toDto)
 					.toList()
 			)
 			.encryptedNotes(
@@ -117,7 +119,8 @@ public class NoteService {
 						currentUser.getId()
 					)
 					.stream()
-					.map(NoteDTOMapper::toDto)
+					.peek(note -> note.setContent("encrypted content"))
+					.map(noteDTOMapper::toDto)
 					.toList()
 			)
 			.build();
@@ -160,7 +163,7 @@ public class NoteService {
 		Note note = getNoteById(noteId);
 
 		if (note.getNoteVisibility().equals(NoteVisibility.ENCRYPTED)) {
-			return NoteDTOMapper
+			return noteDTOMapper
 				.toDto(note)
 				.toBuilder()
 				.content(
@@ -172,11 +175,11 @@ public class NoteService {
 				.build();
 		}
 
-		return NoteDTOMapper.toDto(note);
+		return noteDTOMapper.toDto(note);
 	}
 
 	public NoteDTO getNoteDTOById(Long noteId) {
-		return NoteDTOMapper.toDto(getNoteById(noteId));
+		return noteDTOMapper.toDto(getNoteById(noteId));
 	}
 
 	@Transactional

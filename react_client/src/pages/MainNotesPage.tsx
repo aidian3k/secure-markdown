@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Navigate, useLocation } from "react-router";
 import { MainPageNote } from "../components/features/main-page/MainPageNote.component";
+import { NoteVisibility } from "../core/constants/NoteVisibility";
 
 export const MainNotesPage: FC = () => {
   const location = useLocation();
@@ -8,7 +9,7 @@ export const MainNotesPage: FC = () => {
   const visibility = queryParams.get("visibility");
 
   if (!visibility) {
-    return <Navigate to={'/login'}/>
+    return <Navigate to={"/note?visibility=public"} />;
   }
 
   return (
@@ -17,11 +18,24 @@ export const MainNotesPage: FC = () => {
         {visibility?.charAt(0).toUpperCase() + visibility?.slice(1)} Notes
       </p>
       <div className="grid grid-cols-4 justify-center items-center gap-4">
-        <MainPageNote />
-        <MainPageNote />
-        <MainPageNote />
-        <MainPageNote />
-        <MainPageNote />
+        <MainPageNote
+          title={"aa"}
+          noteVisibility={NoteVisibility.PUBLIC}
+          content={"a"}
+          ownerUserName={"adrian"}
+          updateTimeStamp={new Date()}
+          id={1}
+          isOwner={false}
+        />
+        <MainPageNote
+          title={"aa"}
+          noteVisibility={NoteVisibility.ENCRYPTED}
+          content={"a"}
+          ownerUserName={"adrian"}
+          updateTimeStamp={new Date()}
+          id={1}
+          isOwner={true}
+        />
       </div>
     </div>
   );
