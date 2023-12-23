@@ -1,4 +1,9 @@
-import { Link, Outlet, createBrowserRouter } from "react-router-dom";
+import {
+  Link,
+  Outlet,
+  createBrowserRouter,
+  useNavigate,
+} from "react-router-dom";
 import { RoutingConstants } from "../../core/constants/RoutingConstants";
 import { LoginPage } from "../../pages/LoginPage";
 
@@ -11,8 +16,11 @@ import PublicOffIcon from "@mui/icons-material/PublicOff";
 import EnhancedEncryptionIcon from "@mui/icons-material/EnhancedEncryption";
 import ShieldIcon from "@mui/icons-material/Shield";
 import { NoteAddPage } from "../../pages/NoteAddPage";
+import { MainNotesPage } from "../../pages/MainNotesPage";
 
 export const BasicLayout: FC = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex bg-gray-800">
       <div className="top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 w-1/10 bg-gray-800">
@@ -42,31 +50,31 @@ export const BasicLayout: FC = () => {
           </ul>
           <ul className="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200 dark:border-gray-700">
             <li>
-              <Link
-                to="/public"
+              <div
+                onClick={() => navigate("/note?visibility=public")}
                 className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
               >
                 <PublicIcon />
                 <span className="ms-3">Public</span>
-              </Link>
+              </div>
             </li>
             <li>
-              <Link
-                to="/private"
+              <div
+                onClick={() => navigate("/note?visibility=private")}
                 className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
               >
                 <PublicOffIcon />
                 <span className="ms-3">Private</span>
-              </Link>
+              </div>
             </li>
             <li>
-              <Link
-                to="/encrypted"
+              <div
+                onClick={() => navigate("/note?visibility=encrypted")}
                 className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group"
               >
                 <EnhancedEncryptionIcon />
                 <span className="ms-3">Encrypted</span>
-              </Link>
+              </div>
             </li>
           </ul>
         </div>
@@ -94,6 +102,10 @@ export const routes = createBrowserRouter([
       {
         path: RoutingConstants.NOTE_ADD,
         element: <NoteAddPage />,
+      },
+      {
+        path: "note",
+        element: <MainNotesPage />,
       },
     ],
   },

@@ -24,6 +24,7 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { LoginModal } from "../components/features/login/LoginModal.component";
 
 export const LoginPage: FC = () => {
   const navigate = useNavigate();
@@ -44,6 +45,10 @@ export const LoginPage: FC = () => {
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
+      <LoginModal
+        isOpen={resetPasswordModal}
+        handleClose={() => setResetPasswordModal(false)}
+      />
       <CssBaseline />
       <Grid
         item
