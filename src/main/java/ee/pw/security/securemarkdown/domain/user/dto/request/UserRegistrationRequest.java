@@ -1,9 +1,9 @@
 package ee.pw.security.securemarkdown.domain.user.dto.request;
 
+import ee.pw.security.securemarkdown.infrastructure.validation.constants.ValidationConstants;
 import ee.pw.security.securemarkdown.infrastructure.validation.validators.ValidConfirmationPassword;
 import ee.pw.security.securemarkdown.infrastructure.validation.validators.ValidEmail;
 import ee.pw.security.securemarkdown.infrastructure.validation.validators.ValidPassword;
-import ee.pw.security.securemarkdown.infrastructure.validation.constants.ValidationConstants;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -21,6 +21,8 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
 	List<Note> findAllByNoteVisibility(NoteVisibility noteVisibility);
 
-	@Query("SELECT n FROM notes n WHERE n.owner.id = :ownerId OR n.noteVisibility = NoteVisibility.PUBLIC")
+	@Query(
+		"SELECT n FROM notes n WHERE n.owner.id = :ownerId OR n.noteVisibility = NoteVisibility.PUBLIC"
+	)
 	List<Note> getNotesUserHasAccessTo(Long ownerId);
 }

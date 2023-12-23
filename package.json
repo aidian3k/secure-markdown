@@ -9,5 +9,8 @@
     "java-parser": "~2.0.4",
     "prettier": "~2.8.7",
     "prettier-plugin-java": "^1.6.2"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
   }
 }

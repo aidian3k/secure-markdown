@@ -4,6 +4,7 @@ import React from "react";
 import { LoginPage } from "../../pages/LoginPage";
 import { MainNotesPage } from "../../pages/MainNotesPage";
 import { NoteAddPage } from "../../pages/NoteAddPage";
+import { RegisterPage } from "../../pages/RegisterPage";
 
 export const routes = createBrowserRouter([
   {
@@ -20,5 +21,9 @@ export const routes = createBrowserRouter([
   },
   {
     path: RoutingConstants.NOTE_DETAILS,
+  },
+  {
+    path: RoutingConstants.REGISTER_PAGE,
+    element: <RegisterPage />,
   },
 ]);

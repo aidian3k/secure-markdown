@@ -8,14 +8,13 @@ import ee.pw.security.securemarkdown.infrastructure.validation.constants.ServerC
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import jakarta.mail.MessagingException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

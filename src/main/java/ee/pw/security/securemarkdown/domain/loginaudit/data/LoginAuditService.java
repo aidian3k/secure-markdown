@@ -1,6 +1,5 @@
 package ee.pw.security.securemarkdown.domain.loginaudit.data;
 
-
 import ee.pw.security.securemarkdown.domain.loginaudit.entity.LoginAudit;
 import ee.pw.security.securemarkdown.domain.loginaudit.enums.FailureReason;
 import ee.pw.security.securemarkdown.domain.user.data.UserFinderService;
@@ -11,14 +10,13 @@ import io.vavr.control.Either;
 import io.vavr.control.Try;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

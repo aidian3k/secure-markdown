@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -21,8 +22,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.time.LocalDateTime;
-
 @Entity(name = "medias")
 @AllArgsConstructor
 @NoArgsConstructor
@@ -31,23 +30,24 @@ import java.time.LocalDateTime;
 @Builder
 @Immutable
 public class Media {
-    @Id
-    @GeneratedValue(generator = "medias_seq", strategy = GenerationType.SEQUENCE)
-    private Long id;
 
-    @Column(name = "media_data", nullable = false)
-    @Lob
-    private byte[] mediaData;
+	@Id
+	@GeneratedValue(generator = "medias_seq", strategy = GenerationType.SEQUENCE)
+	private Long id;
 
-    @Column(name = "media_type", nullable = false)
-    private MediaType mediaType;
+	@Column(name = "media_data", nullable = false)
+	@Lob
+	private byte[] mediaData;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Note note;
+	@Column(name = "media_type", nullable = false)
+	private MediaType mediaType;
 
-    @CreationTimestamp
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-    private LocalDateTime creationTimeStamp;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@EqualsAndHashCode.Exclude
+	@ToString.Exclude
+	private Note note;
+
+	@CreationTimestamp
+	@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+	private LocalDateTime creationTimeStamp;
 }

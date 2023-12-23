@@ -7,5 +7,4 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @Transactional
-interface MediaRepository extends JpaRepository<Media, Long> {
-}
+interface MediaRepository extends JpaRepository<Media, Long> {}

@@ -6,12 +6,11 @@ import ee.pw.security.securemarkdown.domain.note.entity.Note;
 import ee.pw.security.securemarkdown.domain.note.enums.NoteVisibility;
 import ee.pw.security.securemarkdown.domain.user.data.CurrentUserService;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor

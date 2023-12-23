@@ -38,12 +38,12 @@ public class SecurityConfiguration {
 		httpSecurity.httpBasic(Customizer.withDefaults());
 
 		httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
-//			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
-//				"/api/auth/login",
-//				"/api/auth/create-user",
-//				"api/auth/reset-password"
-//			);
-//			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
+			//			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
+			//				"/api/auth/login",
+			//				"/api/auth/create-user",
+			//				"api/auth/reset-password"
+			//			);
+			//			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
 			httpSecurityCsrfConfigurer.disable();
 		});
 
