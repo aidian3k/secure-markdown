@@ -18,6 +18,7 @@ import { NoteAddPage } from "../../pages/NoteAddPage";
 import { MainNotesPage } from "../../pages/MainNotesPage";
 import { RegisterPage } from "../../pages/RegisterPage";
 import { NotePage } from "../../pages/NotePage";
+import { ResetPasswordPage } from "../../pages/ResetPasswordPage";
 
 export const BasicLayout: FC = () => {
   const navigate = useNavigate();
@@ -91,6 +92,10 @@ export const routes = createBrowserRouter([
   {
     path: RoutingConstants.LOGIN_PAGE,
     element: <LoginPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
   {
     path: RoutingConstants.REGISTER_PAGE,

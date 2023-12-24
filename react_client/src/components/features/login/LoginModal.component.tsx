@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Grid,
   TextField,
 } from "@mui/material";
 import * as yup from "yup";
@@ -15,7 +14,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { axiosApi } from "../../../tools/configuration/axios-config";
 import AppSnackbar from "../../AppSnackbar";
-import axios, { AxiosError } from "axios";
 import { LoadingButton } from "@mui/lab";
 
 const resetPasswordValidator = yup.object().shape({
@@ -33,7 +31,7 @@ export const LoginModal: FC<ModalProperties> = (props: ModalProperties) => {
     setValue,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm({
     resolver: yupResolver(resetPasswordValidator),
   });
@@ -42,19 +40,21 @@ export const LoginModal: FC<ModalProperties> = (props: ModalProperties) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  
 
   function sendPasswordResetRequest(
     resetPasswordRequest: ResetPasswordRequest
   ) {
     setLoading(true);
-    
-    axiosApi.post("/api/auth/reset-password", resetPasswordRequest)
-    .then(result => {
+
+    axiosApi
+      .post("/api/auth/reset-password", resetPasswordRequest)
+      .then((result) => {
         setSuccess(true);
-    }).catch((error) => {
-      setError("Error occured when trying to reset password")
-    }).finally(() => setLoading(false));
+      })
+      .catch((error) => {
+        setError("Error occured when trying to reset password");
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
@@ -66,14 +66,13 @@ export const LoginModal: FC<ModalProperties> = (props: ModalProperties) => {
         severity="error"
       />
       <AppSnackbar
-        open={!!success}
-        message={'Successfuly sent an email with recover link!'}
+        open={success}
+        message={"Successfuly sent an email with recover link!"}
         onClose={() => {
           setSuccess(false);
           reset();
           handleClose();
-        }
-        }
+        }}
         severity="success"
         duration={2000}
       />

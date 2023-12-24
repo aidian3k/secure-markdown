@@ -8,13 +8,14 @@ import ee.pw.security.securemarkdown.infrastructure.validation.constants.ServerC
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import jakarta.mail.MessagingException;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,12 @@ public class ResetPasswordService {
 	private final UserFacade userFacade;
 	private final PasswordEncoder passwordEncoder;
 
-	public void sendEmailWithLinkToResetPassword(String userEmail) {
-		Optional<User> userOptional = userFacade.getUserOptionalByEmail(userEmail);
+	public void sendEmailWithLinkToResetPassword(
+		ResetPasswordKeyRequest resetPasswordKeyRequest
+	) {
+		Optional<User> userOptional = userFacade.getUserOptionalByEmail(
+			resetPasswordKeyRequest.getEmail()
+		);
 
 		if (userOptional.isEmpty()) {
 			return;
@@ -80,7 +85,7 @@ public class ResetPasswordService {
 				if (
 					resetPassword
 						.getCreationTimeStamp()
-						.isAfter(
+						.isBefore(
 							LocalDateTime.now().minusMinutes(DURATION_OF_VALID_KEY_MINUTES)
 						)
 				) {

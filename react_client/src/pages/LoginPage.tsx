@@ -1,5 +1,4 @@
 import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
@@ -16,7 +15,6 @@ import { LoginRequestValidator } from "../core/types/login/LoginRequest.validato
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LoginRequest } from "../core/types/login/LoginRequest.types";
 import {
-  CircularProgress,
   FormControl,
   FormHelperText,
   IconButton,
@@ -27,7 +25,6 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { LoginModal } from "../components/features/login/LoginModal.component";
 import axios, { AxiosError } from "axios";
-import { ServerConstants } from "../core/constants/ServerConstants";
 import { axiosApi } from "../tools/configuration/axios-config";
 import AppSnackbar from "../components/AppSnackbar";
 import { LoadingButton } from "@mui/lab";
@@ -75,7 +72,8 @@ export const LoginPage: FC = () => {
         } else {
           setError("Error occured when trying to login");
         }
-      }).finally(() => setLoading(false));
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
@@ -173,7 +171,7 @@ export const LoginPage: FC = () => {
               sx={{ mt: 3, mb: 2 }}
               onClick={handleSubmit(sendLoginRequest)}
             >
-             {!loading ? 'Sign In' : 'Loading'}
+              {!loading ? "Sign In" : "Loading"}
             </LoadingButton>
             <Grid container>
               <Grid item xs>

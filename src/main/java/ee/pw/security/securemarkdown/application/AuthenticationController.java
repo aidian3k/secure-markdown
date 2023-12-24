@@ -1,5 +1,6 @@
 package ee.pw.security.securemarkdown.application;
 
+import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordKeyRequest;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordRequest;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordService;
 import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
@@ -37,16 +38,16 @@ class AuthenticationController {
 
 	@PostMapping("/reset-password")
 	public ResponseEntity<Void> handleUserResetPasswordRequest(
-		@RequestBody String email
+		@RequestBody @Valid ResetPasswordKeyRequest resetPasswordKeyRequest
 	) {
-		resetPasswordService.sendEmailWithLinkToResetPassword(email);
+		resetPasswordService.sendEmailWithLinkToResetPassword(resetPasswordKeyRequest);
 
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/confirm-reset-password")
 	public ResponseEntity<Void> handleUserResetPasswordConfirmation(
-		@RequestBody ResetPasswordRequest resetPasswordRequest
+		@RequestBody @Valid ResetPasswordRequest resetPasswordRequest
 	) {
 		Either<Throwable, Void> resetPasswordEither = resetPasswordService.resetUserPassword(
 			resetPasswordRequest
