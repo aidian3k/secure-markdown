@@ -12,15 +12,15 @@ import ee.pw.security.securemarkdown.domain.user.data.CurrentUserService;
 import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
+import ee.pw.security.securemarkdown.infrastructure.exception.note.NoteNotFoundException;
 import ee.pw.security.securemarkdown.infrastructure.security.EncryptionTools;
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,18 +35,13 @@ public class NoteService {
 	private final NoteDTOMapper noteDTOMapper;
 
 	@Transactional
-	public NoteDTO attachNoteToUser(
-		NoteCreationDTO noteCreationDTO
-	) {
+	public NoteDTO attachNoteToUser(NoteCreationDTO noteCreationDTO) {
 		User currentUser = currentUserService.getCurrentUser();
 
 		if (noteCreationDTO.getNoteVisibility().equals(NoteVisibility.ENCRYPTED)) {
 			Note securedNote = getSecuredNote(noteCreationDTO, currentUser);
 
-			return saveNoteAndReturnNoteDTO(
-				securedNote,
-				currentUser
-			);
+			return saveNoteAndReturnNoteDTO(securedNote, currentUser);
 		}
 
 		Note note = makeNoteFromCreationDTO(noteCreationDTO, currentUser);
@@ -123,11 +118,7 @@ public class NoteService {
 	}
 
 	@Transactional
-	public NoteDTO saveNoteAndReturnNoteDTO(
-		Note noteToSave,
-		User user
-	) {
-
+	public NoteDTO saveNoteAndReturnNoteDTO(Note noteToSave, User user) {
 		Note savedNote = noteRepository.save(noteToSave);
 		user.getNotes().add(savedNote);
 		userFacade.saveUser(user);
@@ -188,5 +179,18 @@ public class NoteService {
 				.collect(Collectors.toSet())
 		);
 		userFacade.saveUser(currentUser);
+	}
+
+	public Boolean handleIsNoteEncrypted(Long noteId) {
+		User currentUser = currentUserService.getCurrentUser();
+		return currentUser
+			.getNotes()
+			.stream()
+			.filter(note -> note.getId().equals(noteId))
+			.findAny()
+			.map(note -> note.getNoteVisibility().equals(NoteVisibility.ENCRYPTED))
+			.orElseThrow(() ->
+				new NoteNotFoundException("Note with id=[%d] not found")
+			);
 	}
 }

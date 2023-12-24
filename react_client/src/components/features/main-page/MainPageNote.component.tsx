@@ -20,40 +20,31 @@ export type NoteDTO = {
   title: string;
   content: string;
   updateTimeStamp: Date;
-  ownerUserName: string;
+  ownerUsername: string;
   noteVisibility: NoteVisibility;
-  isOwner: boolean;
+  owner: boolean;
 };
 
 export const MainPageNote: FC<NoteDTO> = (props: NoteDTO) => {
   const navigate = useNavigate();
-  const [passwordModal, setPasswordModal] = useState(false);
 
   function handleNavigationToNote() {
-    if (props.noteVisibility !== NoteVisibility.ENCRYPTED) {
       navigate(`/note/view/${props.id}`);
-    }
-
-    setPasswordModal(true);
   }
 
   return (
     <div className={"transition-all hover:scale-105"}>
-      <EncryptedNoteModal
-        isOpen={passwordModal}
-        handleClose={() => setPasswordModal(false)}
-      />
       <Card sx={{ maxWidth: 345 }} onClick={() => handleNavigationToNote()}>
         <CardHeader
           avatar={
             <Avatar sx={{ bgcolor: "red" }} aria-label="recipe">
-              {props.ownerUserName.charAt(0)}
+              {props.ownerUsername.charAt(0)}
             </Avatar>
           }
           title={props.title}
-          subheader={`${
-            props.ownerUserName
-          } ${props.updateTimeStamp.toDateString()}`}
+          subheader={`${props.ownerUsername} ${new Date(
+            props.updateTimeStamp
+          ).toDateString()}`}
         />
         <CardContent>
           <MDEditor.Markdown
@@ -67,7 +58,7 @@ export const MainPageNote: FC<NoteDTO> = (props: NoteDTO) => {
             }}
           />
         </CardContent>
-        {props.isOwner && (
+        {props.owner && (
           <CardActions disableSpacing>
             <IconButton aria-label="delete">
               <DeleteIcon />

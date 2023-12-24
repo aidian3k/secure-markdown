@@ -18,6 +18,12 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { axiosApi } from "../../tools/configuration/axios-config";
+import { NoteDTO } from "./main-page/MainPageNote.component";
+import { LoadingButton } from "@mui/lab";
+import { useNavigate } from "react-router";
+import axios, { AxiosError } from "axios";
+import AppSnackbar from "../AppSnackbar";
 
 const seeEncryptedNoteValidator = yup.object().shape({
   password: yup
@@ -29,8 +35,13 @@ type NoteViewDTO = {
   password: string;
 };
 
-export const EncryptedNoteModal: FC<ModalProperties> = (
-  props: ModalProperties
+export const EncryptedNoteModal: FC<
+  ModalProperties & { noteId: string; setNote: any }
+> = (
+  props: ModalProperties & {
+    noteId: string;
+    setNote: any;
+  }
 ) => {
   const {
     setValue,
@@ -42,13 +53,48 @@ export const EncryptedNoteModal: FC<ModalProperties> = (
 
   const { isOpen, handleClose } = props;
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   function sendPasswordResetRequest(resetPasswordRequest: NoteViewDTO) {
-    console.log(resetPasswordRequest);
+    setLoading(true);
+    axiosApi
+      .post<NoteDTO>(`/api/note/view/${props.noteId}`, resetPasswordRequest)
+      .then((result) => {
+        props.setNote(result.data);
+        handleClose();
+      })
+      .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          const axiosError: AxiosError = error as AxiosError;
+          if (axiosError.response && axiosError.response.status === 400) {
+            setError(JSON.stringify(axiosError.response.data));
+          } else {
+            setError("Error occured when trying to see encrypted note");
+          }
+        } else {
+          setError("Error occured when trying to see encrypted note");
+        }
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
-    <Dialog open={isOpen} onClose={handleClose}>
+    <Dialog
+      open={isOpen}
+      onClose={(event: any, reason: any) => {
+        if (reason && reason === "backdropClick") {
+          return;
+        }
+        handleClose();
+      }}
+    >
+      <AppSnackbar
+        open={!!error}
+        message={error}
+        onClose={() => setError(null)}
+      />
       <DialogTitle>Encrypted note details</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -86,16 +132,20 @@ export const EncryptedNoteModal: FC<ModalProperties> = (
         </FormControl>
       </DialogContent>
       <DialogActions sx={{ justifyContent: "center" }}>
-        <Button
+        <LoadingButton
           onClick={handleSubmit(sendPasswordResetRequest)}
+          loading={loading}
           color={"success"}
           variant={"contained"}
         >
           See note
-        </Button>
-        <Button onClick={handleClose} color={"error"} variant={"contained"}>
+        </LoadingButton>
+        <LoadingButton loading={loading} onClick={() => {
+          navigate('/note?visibility=encrypted')
+          handleClose();
+        }} color={"error"} variant={"contained"}>
           Cancel
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

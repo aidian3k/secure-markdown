@@ -1,41 +1,59 @@
-import { FC } from "react";
-import { Navigate, useLocation } from "react-router";
-import { MainPageNote } from "../components/features/main-page/MainPageNote.component";
-import { NoteVisibility } from "../core/constants/NoteVisibility";
+import { FC, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import {
+  MainPageNote,
+  NoteDTO,
+} from "../components/features/main-page/MainPageNote.component";
+import { axiosApi } from "../tools/configuration/axios-config";
 
 export const MainNotesPage: FC = () => {
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const visibility = queryParams.get("visibility");
+  const navigate = useNavigate();
+  const [visibility, setVisibility] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Array<NoteDTO>>([]);
 
-  if (!visibility) {
-    return <Navigate to={"/note?visibility=public"} />;
-  }
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const visibility = queryParams.get("visibility");
+    setVisibility(visibility ?? null);
+
+    if (!visibility) {
+      navigate("/note?visibility=public");
+      return;
+    }
+
+    axiosApi
+      .get<Array<NoteDTO>>(`/api/note/${visibility}`)
+      .then((result) => {
+        setNotes(result.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [visibility, navigate, location.search]);
 
   return (
     <div>
       <p className={"text-center text-3xl text-white font-bold mb-4"}>
-        {visibility?.charAt(0).toUpperCase() + visibility?.slice(1)} Notes
+        {!!visibility &&
+          visibility.charAt(0).toUpperCase() + visibility?.slice(1) + " "}
+        Notes
       </p>
       <div className="grid grid-cols-4 justify-center items-center gap-4">
-        <MainPageNote
-          title={"aa"}
-          noteVisibility={NoteVisibility.PUBLIC}
-          content={"a"}
-          ownerUserName={"adrian"}
-          updateTimeStamp={new Date()}
-          id={1}
-          isOwner={false}
-        />
-        <MainPageNote
-          title={"aa"}
-          noteVisibility={NoteVisibility.ENCRYPTED}
-          content={"a"}
-          ownerUserName={"adrian"}
-          updateTimeStamp={new Date()}
-          id={1}
-          isOwner={true}
-        />
+        {notes.map((note, id) => {
+          return (
+            <MainPageNote
+              key={id}
+              id={note.id}
+              title={note.title}
+              content={note.content}
+              updateTimeStamp={note.updateTimeStamp}
+              ownerUsername={note.ownerUsername}
+              noteVisibility={note.noteVisibility}
+              owner={note.owner}
+            />
+          );
+        })}
       </div>
     </div>
   );

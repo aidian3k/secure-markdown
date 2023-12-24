@@ -4,7 +4,9 @@ import ee.pw.security.securemarkdown.domain.note.data.NoteService;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteCreationDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteViewDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.NoteDTO;
+import feign.Response;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/note")
@@ -33,6 +33,16 @@ class NoteController {
 	public ResponseEntity<List<NoteDTO>> handleEncryptedNotesRequest() {
 		return new ResponseEntity<>(
 			noteService.getMainPageNotes().encryptedNotes(),
+			HttpStatus.OK
+		);
+	}
+
+	@GetMapping(value = "/encrypted/{noteId}")
+	public ResponseEntity<Boolean> handleIsEncryptedRequest(
+		@PathVariable Long noteId
+	) {
+		return new ResponseEntity<>(
+			noteService.handleIsNoteEncrypted(noteId),
 			HttpStatus.OK
 		);
 	}
@@ -66,25 +76,25 @@ class NoteController {
 		);
 	}
 
-	@DeleteMapping("/{noteId}")
+	@PostMapping("/delete/{noteId}")
 	@PreAuthorize(
 		"{@noteSecurityValidator.hasUserAccessToNote(#noteViewDTO, #noteId)}"
 	)
 	public ResponseEntity<Void> handleDeleteNoteRequest(
 		@PathVariable Long noteId,
-		NoteViewDTO noteViewDTO
+		@RequestBody NoteViewDTO noteViewDTO
 	) {
 		noteService.deleteAttachedNote(noteId);
 		return ResponseEntity.ok().build();
 	}
 
-	@GetMapping("/{noteId}")
+	@PostMapping("/view/{noteId}")
 	@PreAuthorize(
 		"{@noteSecurityValidator.hasUserAccessToNote(#noteViewDTO, #noteId)}"
 	)
 	public ResponseEntity<NoteDTO> handleSingleNoteRequest(
 		@PathVariable Long noteId,
-		NoteViewDTO noteViewDTO
+		@RequestBody NoteViewDTO noteViewDTO
 	) {
 		return new ResponseEntity<>(
 			noteService.getNoteDTOByViewRequest(noteViewDTO, noteId),
