@@ -1,5 +1,5 @@
 export enum NoteVisibility {
-  PRIVATE,
-  ENCRYPTED,
-  PUBLIC
+  PRIVATE = 'PRIVATE',
+  ENCRYPTED = 'ENCRYPTED',
+  PUBLIC = 'PUBLIC'
 }

@@ -6,16 +6,17 @@ import jakarta.validation.Constraint;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.List;
 import org.passay.LengthRule;
 import org.passay.PasswordData;
 import org.passay.PasswordValidator;
 import org.passay.RuleResult;
 import org.springframework.util.StringUtils;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.List;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -40,8 +41,6 @@ public @interface ValidCreationNote {
 			NoteCreationDTO creationDTO,
 			ConstraintValidatorContext context
 		) {
-			boolean finalResult = true;
-
 			if (
 				creationDTO.getNoteVisibility().equals(NoteVisibility.ENCRYPTED) &&
 				!StringUtils.hasText(creationDTO.getNotePassword())

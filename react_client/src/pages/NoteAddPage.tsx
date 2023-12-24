@@ -3,7 +3,6 @@ import Dropzone from "react-dropzone";
 import MDEditor from "@uiw/react-md-editor";
 import rehypeSanitize from "rehype-sanitize";
 import {
-  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -19,6 +18,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import AppSnackbar from "../components/AppSnackbar";
+import { LoadingButton } from "@mui/lab";
+import { axiosApi } from "../tools/configuration/axios-config";
+import axios, { AxiosError } from "axios";
+import { NoteVisibility } from "../core/constants/NoteVisibility";
+import { useNavigate } from "react-router";
 
 const noteAddValidator = yup
   .object()
@@ -58,10 +63,15 @@ export const NoteAddPage: React.FC = () => {
     handleSubmit,
     formState: { errors },
     watch,
+    reset,
   } = useForm({
     resolver: yupResolver(noteAddValidator),
   });
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleDrop = (acceptedFiles: File[]) => {
     const imageUrl = URL.createObjectURL(acceptedFiles[0]);
@@ -69,19 +79,76 @@ export const NoteAddPage: React.FC = () => {
     setValue("content", `${watch("content")}\n![Uploaded Image](${imageUrl})`);
   };
 
+  function getNoteVisibility(
+    noteCreationRequest: NoteCreationRequest
+  ): NoteVisibility {
+    if (noteCreationRequest.public) {
+      return NoteVisibility.PUBLIC;
+    } else if (noteCreationRequest.encrypted) {
+      return NoteVisibility.ENCRYPTED;
+    } else {
+      return NoteVisibility.PRIVATE;
+    }
+  }
+
   function sendNoteCreationRequest(noteCreationRequest: NoteCreationRequest) {
-    console.log(noteCreationRequest);
+    setLoading(true);
+    const noteVisibility: NoteVisibility =
+      getNoteVisibility(noteCreationRequest);
+
+    axiosApi
+      .post("/api/note/save-note", {
+        content: noteCreationRequest.content,
+        title: noteCreationRequest.title,
+        noteVisibility: noteVisibility.toString(),
+        notePassword: noteCreationRequest.password,
+      })
+      .then((result) => {
+        if (result.status === 201) {
+          setSuccess(true);
+        }
+      })
+      .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          const axiosError: AxiosError = error as AxiosError;
+          if (axiosError.response && axiosError.response.status === 400) {
+            setError(JSON.stringify(axiosError.response.data));
+          } else {
+            setError("Error occurred when trying to login");
+          }
+        } else {
+          setError("Error occurred when trying to login");
+        }
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
     <div className={"p-1"}>
+      <AppSnackbar
+        open={!!error}
+        message={error}
+        onClose={() => setError(null)}
+      />
+      <AppSnackbar
+        open={success}
+        message={"Successfully added note"}
+        severity={"success"}
+        duration={3000}
+        onClose={() => {
+          setSuccess(false);
+          setError(null);
+          reset();
+          navigate("/");
+        }}
+      />
       <div className={"text-center flex gap-2 justify-center items-center"}>
         <p className={"text-3xl text-white font-bold"}>Adding new note</p>
         <AddCircleIcon fontSize="large" sx={{ color: "white" }} />
       </div>
       <TextField
         onChange={(event) => setValue("title", event.target.value)}
-        sx={{ color: "white" }}
+        inputProps={{ style: { color: "white" } }}
         error={!!errors.title}
         helperText={!!errors.title ? errors.title.message : ""}
         margin="normal"
@@ -162,6 +229,7 @@ export const NoteAddPage: React.FC = () => {
             error={!!errors.password}
             type={showPassword ? "text" : "password"}
             fullWidth
+            inputProps={{ style: { color: "white" } }}
             required
             label="Password"
             name="password"
@@ -190,13 +258,14 @@ export const NoteAddPage: React.FC = () => {
       )}
 
       <div className={"mt-4"}>
-        <Button
+        <LoadingButton
           fullWidth
+          loading={loading}
           variant="contained"
           onClick={handleSubmit(sendNoteCreationRequest)}
         >
-          Save note
-        </Button>
+          {!loading ? "Save note" : "Saving..."}
+        </LoadingButton>
       </div>
     </div>
   );

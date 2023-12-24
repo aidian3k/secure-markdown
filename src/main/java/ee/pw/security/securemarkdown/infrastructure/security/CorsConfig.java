@@ -1,6 +1,5 @@
 package ee.pw.security.securemarkdown.infrastructure.security;
 
-import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -8,6 +7,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 @Configuration
 public class CorsConfig {
@@ -21,7 +22,8 @@ public class CorsConfig {
 					.addMapping("/api/**")
 					.allowedOrigins("http://localhost:3000")
 					.allowedMethods("GET", "POST", "PUT", "DELETE")
-					.allowedHeaders("*");
+					.allowedHeaders("*")
+					.allowCredentials(true);
 			}
 		};
 	}
@@ -42,8 +44,11 @@ public class CorsConfig {
 		configuration.setAllowedMethods(
 			List.of("GET", "POST", "DELETE", "PATCH", "OPTIONS")
 		);
-		configuration.setAllowedHeaders(List.of("Content-Type"));
+		configuration.setAllowedHeaders(
+			List.of("Content-Type", "Access-Control-Allow-Credentials")
+		);
 		configuration.setMaxAge(3600L);
+		configuration.setAllowCredentials(true);
 
 		source.registerCorsConfiguration("/api/**", configuration);
 

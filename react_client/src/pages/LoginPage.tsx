@@ -45,17 +45,12 @@ export const LoginPage: FC = () => {
 
   function sendLoginRequest(userLoginRequest: LoginRequest) {
     setLoading(true);
+    const dataToSend = new FormData();
+    dataToSend.append("email", userLoginRequest.email);
+    dataToSend.append("password", userLoginRequest.password);
 
     axiosApi
-      .post(
-        "/api/auth/login",
-        new URLSearchParams(userLoginRequest).toString(),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      )
+      .post("/api/auth/login", dataToSend, { withCredentials: true })
       .then((result) => {
         if (result.status === 200) {
           navigate("/");

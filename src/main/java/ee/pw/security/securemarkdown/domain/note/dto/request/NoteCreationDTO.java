@@ -1,9 +1,9 @@
 package ee.pw.security.securemarkdown.domain.note.dto.request;
 
 import ee.pw.security.securemarkdown.domain.note.enums.NoteVisibility;
+import ee.pw.security.securemarkdown.infrastructure.validation.annotation.Password;
 import ee.pw.security.securemarkdown.infrastructure.validation.constants.ValidationConstants;
 import ee.pw.security.securemarkdown.infrastructure.validation.validators.ValidCreationNote;
-import ee.pw.security.securemarkdown.infrastructure.validation.validators.ValidPassword;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,5 +32,7 @@ public class NoteCreationDTO {
 	@NotNull
 	private NoteVisibility noteVisibility;
 
+	@Password
+	@Size(max = ValidationConstants.EIGHT_BITS)
 	String notePassword;
 }

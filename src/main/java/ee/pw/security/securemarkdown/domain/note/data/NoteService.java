@@ -13,15 +13,14 @@ import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.security.EncryptionTools;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +36,7 @@ public class NoteService {
 
 	@Transactional
 	public NoteDTO attachNoteToUser(
-		NoteCreationDTO noteCreationDTO,
-		List<MultipartFile> multipartFileList
+		NoteCreationDTO noteCreationDTO
 	) {
 		User currentUser = currentUserService.getCurrentUser();
 
@@ -47,14 +45,13 @@ public class NoteService {
 
 			return saveNoteAndReturnNoteDTO(
 				securedNote,
-				currentUser,
-				multipartFileList
+				currentUser
 			);
 		}
 
 		Note note = makeNoteFromCreationDTO(noteCreationDTO, currentUser);
 
-		return saveNoteAndReturnNoteDTO(note, currentUser, multipartFileList);
+		return saveNoteAndReturnNoteDTO(note, currentUser);
 	}
 
 	private static Note makeNoteFromCreationDTO(
@@ -128,10 +125,8 @@ public class NoteService {
 	@Transactional
 	public NoteDTO saveNoteAndReturnNoteDTO(
 		Note noteToSave,
-		User user,
-		List<MultipartFile> multipartFileList
+		User user
 	) {
-		mediaService.attachMediasToPhotos(multipartFileList, noteToSave);
 
 		Note savedNote = noteRepository.save(noteToSave);
 		user.getNotes().add(savedNote);

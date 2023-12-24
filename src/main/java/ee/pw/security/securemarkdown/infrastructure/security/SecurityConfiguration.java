@@ -6,13 +6,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 
@@ -34,18 +36,16 @@ public class SecurityConfiguration {
 	public SecurityFilterChain configureSecurityFilterChain(
 		HttpSecurity httpSecurity
 	) throws Exception {
-		httpSecurity.httpBasic(Customizer.withDefaults());
+		httpSecurity.httpBasic(AbstractHttpConfigurer::disable);
 		httpSecurity.cors();
 
-		httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
-			//			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
-			//				"/api/auth/login",
-			//				"/api/auth/create-user",
-			//				"api/auth/reset-password"
-			//			);
-			//			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
-			httpSecurityCsrfConfigurer.disable();
-		});
+		//			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
+		//				"/api/auth/login",
+		//				"/api/auth/create-user",
+		//				"api/auth/reset-password"
+		//			);
+		//			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
+		httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
 		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {
 			httpSecurityFormLoginConfigurer.loginProcessingUrl("/api/auth/login");
@@ -102,10 +102,18 @@ public class SecurityConfiguration {
 		);
 
 		httpSecurity.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
-			httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(
-				(request, response, accessDeniedException) -> {
-					new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-				}
+			httpSecurityExceptionHandlingConfigurer
+				.accessDeniedHandler((request, response, accessDeniedException) -> {
+					new ResponseEntity<>(HttpStatus.FORBIDDEN);
+				})
+				.authenticationEntryPoint((request, response, authException) ->
+					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
+				)
+		);
+
+		httpSecurity.sessionManagement(httpSecuritySessionManagementConfigurer ->
+			httpSecuritySessionManagementConfigurer.sessionCreationPolicy(
+				SessionCreationPolicy.ALWAYS
 			)
 		);
 
