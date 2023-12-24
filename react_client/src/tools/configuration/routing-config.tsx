@@ -19,9 +19,23 @@ import { MainNotesPage } from "../../pages/MainNotesPage";
 import { RegisterPage } from "../../pages/RegisterPage";
 import { NotePage } from "../../pages/NotePage";
 import { ResetPasswordPage } from "../../pages/ResetPasswordPage";
+import { axiosApi } from "./axios-config";
 
 export const BasicLayout: FC = () => {
   const navigate = useNavigate();
+
+  function handleLogoutCall(): void {
+    axiosApi
+      .post("/api/auth/logout")
+      .then((result) => {
+        if (result.status === 200) {
+          navigate("/login");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
   return (
     <div className="flex bg-gray-800">
@@ -44,7 +58,10 @@ export const BasicLayout: FC = () => {
               </Link>
             </li>
             <li>
-              <div className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group cursor-pointer">
+              <div
+                className="flex items-center p-2 rounded-lg text-white hover:bg-gray-700 group cursor-pointer"
+                onClick={() => handleLogoutCall()}
+              >
                 <LogoutIcon />
                 <span className="ms-3">Logout</span>
               </div>
