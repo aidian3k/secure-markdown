@@ -34,8 +34,8 @@ public class SecurityConfiguration {
 	public SecurityFilterChain configureSecurityFilterChain(
 		HttpSecurity httpSecurity
 	) throws Exception {
-		httpSecurity.cors(Customizer.withDefaults());
 		httpSecurity.httpBasic(Customizer.withDefaults());
+		httpSecurity.cors();
 
 		httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
 			//			httpSecurityCsrfConfigurer.ignoringRequestMatchers(

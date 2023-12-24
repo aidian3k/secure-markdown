@@ -5,6 +5,7 @@ import ee.pw.security.securemarkdown.domain.note.dto.request.NoteCreationDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.request.NoteViewDTO;
 import ee.pw.security.securemarkdown.domain.note.dto.response.NoteDTO;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

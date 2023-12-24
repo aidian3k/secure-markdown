@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { ModalProperties } from "../../../core/types/Modal.types";
 import {
   Button,
@@ -13,6 +13,10 @@ import {
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
+import { axiosApi } from "../../../tools/configuration/axios-config";
+import AppSnackbar from "../../AppSnackbar";
+import axios, { AxiosError } from "axios";
+import { LoadingButton } from "@mui/lab";
 
 const resetPasswordValidator = yup.object().shape({
   email: yup
@@ -29,20 +33,50 @@ export const LoginModal: FC<ModalProperties> = (props: ModalProperties) => {
     setValue,
     handleSubmit,
     formState: { errors },
+    reset
   } = useForm({
     resolver: yupResolver(resetPasswordValidator),
   });
 
   const { isOpen, handleClose } = props;
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
 
   function sendPasswordResetRequest(
     resetPasswordRequest: ResetPasswordRequest
   ) {
-    console.log(resetPasswordRequest);
+    setLoading(true);
+    
+    axiosApi.post("/api/auth/reset-password", resetPasswordRequest)
+    .then(result => {
+        setSuccess(true);
+    }).catch((error) => {
+      setError("Error occured when trying to reset password")
+    }).finally(() => setLoading(false));
   }
 
   return (
     <Dialog open={isOpen} onClose={handleClose}>
+      <AppSnackbar
+        open={!!error}
+        message={error}
+        onClose={() => setError(null)}
+        severity="error"
+      />
+      <AppSnackbar
+        open={!!success}
+        message={'Successfuly sent an email with recover link!'}
+        onClose={() => {
+          setSuccess(false);
+          reset();
+          handleClose();
+        }
+        }
+        severity="success"
+        duration={2000}
+      />
       <DialogTitle>Reset password</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -63,13 +97,14 @@ export const LoginModal: FC<ModalProperties> = (props: ModalProperties) => {
         />
       </DialogContent>
       <DialogActions sx={{ justifyContent: "center" }}>
-        <Button
+        <LoadingButton
           onClick={handleSubmit(sendPasswordResetRequest)}
           color={"success"}
           variant={"contained"}
+          loading={loading}
         >
           Reset password
-        </Button>
+        </LoadingButton>
         <Button onClick={handleClose} color={"error"} variant={"contained"}>
           Cancel
         </Button>

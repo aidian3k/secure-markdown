@@ -16,6 +16,7 @@ import { LoginRequestValidator } from "../core/types/login/LoginRequest.validato
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LoginRequest } from "../core/types/login/LoginRequest.types";
 import {
+  CircularProgress,
   Container,
   FormControl,
   FormControlLabel,
@@ -28,6 +29,10 @@ import {
 import * as yup from "yup";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { error } from "console";
+import { axiosApi } from "../tools/configuration/axios-config";
+import axios, { AxiosError } from "axios";
+import AppSnackbar from "../components/AppSnackbar";
+import { LoadingButton } from "@mui/lab";
 
 type RegisterRequest = {
   username: string;
@@ -56,20 +61,61 @@ export const RegisterPage: FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
   const {
     setValue,
     handleSubmit,
     formState: { errors },
+    reset
   } = useForm({
     resolver: yupResolver(RegisterRequestValidator),
   });
 
   function sendRegisterRequest(userRegisterRequest: RegisterRequest) {
-    console.log(userRegisterRequest);
+    setLoading(true);
+
+    axiosApi
+      .post("/api/auth/create-user", userRegisterRequest)
+      .then((response) => {
+        if(response.status === 201) {
+          setSuccess(true);
+        }
+      })
+      .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          const axiosError: AxiosError = error as AxiosError;
+          if (axiosError.response && axiosError.response.status === 400) {
+            setError(JSON.stringify(axiosError.response.data));
+          }
+        } else {
+          setError("An unexpected error occurred.");
+        }
+      }).finally(() => setLoading(false));
   }
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
+      <AppSnackbar
+        open={!!error}
+        message={error}
+        onClose={() => {
+          setError(null);
+        }
+        }
+      />
+       <AppSnackbar
+        open={!!success}
+        message={'Successfuly created an account! Try to login'}
+        onClose={() => {
+          setSuccess(false);
+          reset();
+          navigate('/login');
+        }
+        }
+        severity="success"
+        duration={2000}
+      />
       <CssBaseline />
       <Grid
         item
@@ -205,15 +251,17 @@ export const RegisterPage: FC = () => {
                   </FormControl>
                 </Grid>
               </Grid>
-              <Button
+              <LoadingButton
                 type="submit"
+                loading={loading}
                 fullWidth
+                disabled={loading}
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
                 onClick={handleSubmit(sendRegisterRequest)}
               >
-                Sign Up
-              </Button>
+                {!loading ? 'Sign Up' : 'Loading'}
+              </LoadingButton>
               <Grid container justifyContent="center">
                 <Grid item>
                   <Link

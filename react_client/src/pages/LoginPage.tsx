@@ -16,6 +16,7 @@ import { LoginRequestValidator } from "../core/types/login/LoginRequest.validato
 import { yupResolver } from "@hookform/resolvers/yup";
 import { LoginRequest } from "../core/types/login/LoginRequest.types";
 import {
+  CircularProgress,
   FormControl,
   FormHelperText,
   IconButton,
@@ -25,11 +26,17 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { LoginModal } from "../components/features/login/LoginModal.component";
+import axios, { AxiosError } from "axios";
+import { ServerConstants } from "../core/constants/ServerConstants";
+import { axiosApi } from "../tools/configuration/axios-config";
+import AppSnackbar from "../components/AppSnackbar";
+import { LoadingButton } from "@mui/lab";
 
 export const LoginPage: FC = () => {
   const navigate = useNavigate();
   const [resetPasswordModal, setResetPasswordModal] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const {
     setValue,
@@ -40,11 +47,44 @@ export const LoginPage: FC = () => {
   });
 
   function sendLoginRequest(userLoginRequest: LoginRequest) {
-    console.log(userLoginRequest);
+    setLoading(true);
+
+    axiosApi
+      .post(
+        "/api/auth/login",
+        new URLSearchParams(userLoginRequest).toString(),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      )
+      .then((result) => {
+        if (result.status === 200) {
+          navigate("/");
+        }
+      })
+      .catch((error) => {
+        if (axios.isAxiosError(error)) {
+          const axiosError: AxiosError = error as AxiosError;
+          if (axiosError.response && axiosError.response.status === 400) {
+            setError(JSON.stringify(axiosError.response.data));
+          } else {
+            setError("Error occured when trying to login");
+          }
+        } else {
+          setError("Error occured when trying to login");
+        }
+      }).finally(() => setLoading(false));
   }
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
+      <AppSnackbar
+        open={!!error}
+        message={error}
+        onClose={() => setError(null)}
+      />
       <LoginModal
         isOpen={resetPasswordModal}
         handleClose={() => setResetPasswordModal(false)}
@@ -125,15 +165,16 @@ export const LoginPage: FC = () => {
                 <FormHelperText error>{errors.password.message}</FormHelperText>
               )}
             </FormControl>
-            <Button
+            <LoadingButton
               type="submit"
+              loading={loading}
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
               onClick={handleSubmit(sendLoginRequest)}
             >
-              Sign In
-            </Button>
+             {!loading ? 'Sign In' : 'Loading'}
+            </LoadingButton>
             <Grid container>
               <Grid item xs>
                 <Link
