@@ -11,29 +11,26 @@ echo "[req]
 default_bits = 4096
 prompt = no
 default_md = sha256
-distinguished_name = dn
-req_extensions = req_ext
+distinguished_name = WUT
 
-[dn]
-CN = aidian3k
-
-[req_ext]
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.1 = localhost
-" >> ${ORGANIZATION_SIGNING_NAME}.conf
+[WUT]
+C = PL
+ST = Mazovian
+L = Warsaw
+O = Warsaw University of Technology
+OU = Electrical faculty
+CN = Electrical" >> "${ORGANIZATION_SIGNING_NAME}.conf"
 
 echo "[req]
 default_bits = 4096
 prompt = no
 default_md = sha256
-distinguished_name = dolphin
+distinguished_name = Dolphin
 
-[dolphin]
+[Dolphin]
 C = PL
 ST = Mazovian
-L = Siedlce
+L = Warsaw
 O = Dolphin.sp.zoo
 OU = IT
 CN = dolphins" >> "${APPLICATION_NAME}.conf"
@@ -45,7 +42,7 @@ subjectAltName = @alt_names
 DNS.1 = localhost" >> "${DOMAIN_FILE_NAME}"
 
 # Creating ca organization for signing the key
-openssl req -x509 -newkey rsa:4096 -keyout ${ORGANIZATION_SIGNING_NAME}.key -out ${ORGANIZATION_SIGNING_NAME}.crt -config ${APPLICATION_NAME}.conf -nodes
+openssl req -x509 -newkey rsa:4096 -keyout ${ORGANIZATION_SIGNING_NAME}.key -out ${ORGANIZATION_SIGNING_NAME}.crt -config ${ORGANIZATION_SIGNING_NAME}.conf -nodes
 
 # Creating request from the website to sign the csr
 openssl req -newkey rsa:4096 -keyout "${APPLICATION_NAME}.key" -out "${APPLICATION_NAME}.csr" -config ${APPLICATION_NAME}.conf -nodes

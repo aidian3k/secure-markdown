@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -26,13 +27,16 @@ public class SecurityConfiguration {
 	private final AuthenticationFailureHandler authenticationFailureHandler;
 	private final CsrfTokenRepository csrfTokenRepository;
 	private final LoginAuditService loginAuditService;
+	private final CorsConfigurationSource corsConfigurationSource;
 
 	@Bean
 	public SecurityFilterChain configureSecurityFilterChain(
 		HttpSecurity httpSecurity
 	) throws Exception {
 		httpSecurity.httpBasic(AbstractHttpConfigurer::disable);
-		httpSecurity.cors();
+		httpSecurity.cors(httpSecurityCorsConfigurer -> {
+			httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource);
+		});
 
 		// httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
 		// 	httpSecurityCsrfConfigurer.ignoringRequestMatchers(
@@ -43,7 +47,7 @@ public class SecurityConfiguration {
 		// 	);
 		// 	httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
 		// });
-		httpSecurity.csrf(t -> t.disable());
+		httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
 		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {
 			httpSecurityFormLoginConfigurer.loginProcessingUrl("/api/auth/login");

@@ -1,17 +1,22 @@
-version: "3.0"
+version: "3.1"
 
 services:
   secure-markdown-postgres:
     container_name: secure-markdown-postgres
+    networks:
+      - network
     image: postgres:latest
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=secure-markdown
     ports:
       - "5432:5432"
 
   secure-markdown-backend:
     container_name: secure-markdown-backend
+    networks:
+      - network
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,16 +24,20 @@ services:
       - "8080:8080"
     depends_on:
       secure-markdown-postgres:
-        condition: service_healthy
+        condition: service_started
+      secure-markdown-mail:
+        condition: service_started
     environment:
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - FRONTEND_URL=https://localhost
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://secure-markdown-postgres:5432/postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://secure-markdown-postgres:5432/secure-markdown
       - SSL_PASSWORD=root
 
   secure-markdown-frontend:
     container_name: secure-markdown-frontend
+    networks:
+      - network
     build:
       context: react_client
       dockerfile: Dockerfile
@@ -36,21 +45,31 @@ services:
       - "3000:443"
     depends_on:
       secure-markdown-backend:
-        condition: service_healthy
+        condition: service_started
 
   secure-markdown-nginx:
     container_name: secure-markdown-nginx
+    networks:
+      - network
     build:
       context: nginx
       dockerfile: Dockerfile
     depends_on:
       secure-markdown-frontend:
-        condition: service_healthy
+        condition: service_started
+      secure-markdown-backend:
+        condition: service_started
     ports:
       - "443:443"
 
   secure-markdown-mail:
     image: mailhog/mailhog:v1.0.1
+    networks:
+      - network
     ports:
       - "1025:1025"
       - "8025:8025"
+
+networks:
+  network:
+    driver: bridge
