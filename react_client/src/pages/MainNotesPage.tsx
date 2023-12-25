@@ -11,6 +11,7 @@ export const MainNotesPage: FC = () => {
   const navigate = useNavigate();
   const [visibility, setVisibility] = useState<string | null>(null);
   const [notes, setNotes] = useState<Array<NoteDTO>>([]);
+  console.log(process.env.REACT_APP_BACKEND_URL);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);

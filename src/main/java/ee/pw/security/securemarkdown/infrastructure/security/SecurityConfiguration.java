@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -21,11 +20,7 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@EnableMethodSecurity(
-	securedEnabled = true,
-	prePostEnabled = true,
-	proxyTargetClass = true
-)
+@EnableMethodSecurity(securedEnabled = true, proxyTargetClass = true)
 public class SecurityConfiguration {
 
 	private final AuthenticationFailureHandler authenticationFailureHandler;
@@ -39,13 +34,16 @@ public class SecurityConfiguration {
 		httpSecurity.httpBasic(AbstractHttpConfigurer::disable);
 		httpSecurity.cors();
 
-		//			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
-		//				"/api/auth/login",
-		//				"/api/auth/create-user",
-		//				"api/auth/reset-password"
-		//			);
-		//			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
-		httpSecurity.csrf(AbstractHttpConfigurer::disable);
+		// httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
+		// 	httpSecurityCsrfConfigurer.ignoringRequestMatchers(
+		// 		"/api/auth/login",
+		// 		"api/auth/create-user",
+		// 		"api/auth/reset-password",
+		// 		"api/auth/confirm-rest-password"
+		// 	);
+		// 	httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
+		// });
+		httpSecurity.csrf(t -> t.disable());
 
 		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {
 			httpSecurityFormLoginConfigurer.loginProcessingUrl("/api/auth/login");
@@ -97,24 +95,26 @@ public class SecurityConfiguration {
 				.permitAll()
 		);
 
-		httpSecurity.authorizeHttpRequests(requestMatcherRegistry ->
-			requestMatcherRegistry.anyRequest().authenticated()
-		);
-
 		httpSecurity.exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
 			httpSecurityExceptionHandlingConfigurer
 				.accessDeniedHandler((request, response, accessDeniedException) -> {
-					new ResponseEntity<>(HttpStatus.FORBIDDEN);
+					response.setStatus(HttpStatus.FORBIDDEN.value());
+					new HttpStatusEntryPoint(HttpStatus.FORBIDDEN);
 				})
-				.authenticationEntryPoint((request, response, authException) ->
-					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)
-				)
+				.authenticationEntryPoint((request, response, authException) -> {
+					response.setStatus(HttpStatus.UNAUTHORIZED.value());
+					new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED);
+				})
 		);
 
 		httpSecurity.sessionManagement(httpSecuritySessionManagementConfigurer ->
 			httpSecuritySessionManagementConfigurer.sessionCreationPolicy(
 				SessionCreationPolicy.ALWAYS
 			)
+		);
+
+		httpSecurity.authorizeHttpRequests(requestMatcherRegistry ->
+			requestMatcherRegistry.anyRequest().authenticated()
 		);
 
 		return httpSecurity.build();

@@ -1,6 +1,55 @@
 version: "3.0"
 
 services:
+  secure-markdown-postgres:
+    container_name: secure-markdown-postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    ports:
+      - "5432:5432"
+
   secure-markdown-backend:
     container_name: secure-markdown-backend
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      secure-markdown-postgres:
+        condition: service_healthy
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - FRONTEND_URL=https://localhost
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://secure-markdown-postgres:5432/postgres
+
+  secure-markdown-frontend:
+    container_name: secure-markdown-frontend
+    build:
+      context: react_client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:443"
+    depends_on:
+      secure-markdown-backend:
+        condition: service_healthy
+
+  secure-markdown-nginx:
+    container_name: secure-markdown-nginx
+    build:
+      context: nginx
+      dockerfile: Dockerfile
+    depends_on:
+      secure-markdown-frontend:
+        condition: service_healthy
+    ports:
+      - "443:443"
+
+  secure-markdown-mail:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"

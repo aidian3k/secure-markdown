@@ -1,10 +1,14 @@
-FROM gradle
-WORKDIR /app
-COPY gradle .
+FROM openjdk:17-jdk-slim
+
+COPY gradle/wrapper gradle/wrapper
+
 COPY gradlew .
+
 COPY build.gradle .
 COPY settings.gradle .
-COPY src/ .
+COPY src ./src
 
+RUN ./gradlew build
 
-ENTRYPOINT ["./gradlew bootRun"]
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "build/libs/secure-markdown-0.0.1-SNAPSHOT.jar"]

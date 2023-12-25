@@ -4,12 +4,12 @@ import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.mail.MailService;
-import ee.pw.security.securemarkdown.infrastructure.validation.constants.ServerConstants;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +29,9 @@ public class ResetPasswordService {
 	private final MailService mailService;
 	private final UserFacade userFacade;
 	private final PasswordEncoder passwordEncoder;
+
+	@Value("${frontend.url}")
+	private String frontendUrl;
 
 	public void sendEmailWithLinkToResetPassword(
 		ResetPasswordKeyRequest resetPasswordKeyRequest
@@ -59,7 +62,7 @@ public class ResetPasswordService {
 				"Reset password",
 				"Reset password request was made to your account. " +
 				"If you want to reset password go to website: " +
-				ServerConstants.FRONTEND_SERVER_URL +
+				frontendUrl +
 				"/reset-password?" +
 				"randomKey=" +
 				generatedRandomKey

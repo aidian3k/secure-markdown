@@ -63,12 +63,12 @@ class AuthConfiguration {
 	@Bean
 	public CsrfTokenRepository csrfTokenRepository() {
 		CookieCsrfTokenRepository cookieCsrfTokenRepository = new CookieCsrfTokenRepository();
-		cookieCsrfTokenRepository.setCookiePath("/");
+		cookieCsrfTokenRepository.setHeaderName("X-XSRF-TOKEN");
+		cookieCsrfTokenRepository.setCookieCustomizer(responseCookieBuilder -> {
+			responseCookieBuilder.httpOnly(false);
+			responseCookieBuilder.path("/");
+		});
 
 		return cookieCsrfTokenRepository;
 	}
-	//	@Bean
-	//	public AuthenticationFailureHandler configureAuthenticationFailureHandler() {
-	//		return null;
-	//	}
 }

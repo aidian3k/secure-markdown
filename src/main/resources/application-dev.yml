@@ -1,0 +1,24 @@
+server:
+  port: 8080
+  server-header: ""
+  ssl:
+    key-store-type: PKCS12
+    key-store: classpath:server.p12
+    key-store-password: "${KEY_STORE_PASSWORD}"
+    enabled: true
+
+frontend:
+  url: "${FRONTEND_URL}"
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: "${SPRING_DATASOURCE_URL}"
+    username: "${POSTGRES_USER}"
+    password: "${POSTGRES_PASSWORD}"
+  jpa:
+    hibernate:
+      ddl-auto: update
+  mail:
+    host: secure-markdown-mail
+    port: 1025
