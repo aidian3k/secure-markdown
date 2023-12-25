@@ -13,7 +13,7 @@ RUN npm run build
 FROM nginx:alpine
 
 COPY --from=build /secure-markdown-frontend/build/ /etc/nginx/html
+COPY src/ssl/ /etc/nginx/ssl
 COPY nginx.conf /etc/nginx/nginx.conf
 
-EXPOSE 80
-EXPOSE 3000
+EXPOSE 443

@@ -25,6 +25,7 @@ services:
       - POSTGRES_PASSWORD=root
       - FRONTEND_URL=https://localhost
       - SPRING_DATASOURCE_URL=jdbc:postgresql://secure-markdown-postgres:5432/postgres
+      - SSL_PASSWORD=root
 
   secure-markdown-frontend:
     container_name: secure-markdown-frontend

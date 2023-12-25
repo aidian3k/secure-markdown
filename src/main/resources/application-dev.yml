@@ -3,8 +3,8 @@ server:
   server-header: ""
   ssl:
     key-store-type: PKCS12
-    key-store: classpath:server.p12
-    key-store-password: "${KEY_STORE_PASSWORD}"
+    key-store: classpath:secure-markdown-backend.pfx
+    key-store-password: "${SSL_PASSWORD}"
     enabled: true
 
 frontend:
