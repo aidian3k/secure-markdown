@@ -48,6 +48,7 @@ export const LoginPage: FC = () => {
     const dataToSend = new FormData();
     dataToSend.append("email", userLoginRequest.email);
     dataToSend.append("password", userLoginRequest.password);
+    dataToSend.append("token", userLoginRequest.token);
 
     axiosApi
       .post("/api/auth/login", dataToSend, { withCredentials: true })
@@ -158,6 +159,17 @@ export const LoginPage: FC = () => {
                 <FormHelperText error>{errors.password.message}</FormHelperText>
               )}
             </FormControl>
+            <TextField
+              onChange={(event) => setValue("token", event.target.value)}
+              error={!!errors.token}
+              helperText={!!errors.token ? errors.token.message : ""}
+              margin="normal"
+              required
+              fullWidth
+              label="Token"
+              name="token"
+              autoFocus
+            />
             <LoadingButton
               type="submit"
               loading={loading}

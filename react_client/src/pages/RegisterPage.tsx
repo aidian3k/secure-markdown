@@ -1,5 +1,4 @@
 import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
@@ -10,16 +9,11 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { FC, useState } from "react";
 import { useNavigate } from "react-router";
-import { Copyright } from "../components/features/login/Copyright";
 import { useForm } from "react-hook-form";
-import { LoginRequestValidator } from "../core/types/login/LoginRequest.validator";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { LoginRequest } from "../core/types/login/LoginRequest.types";
 import {
-  CircularProgress,
   Container,
   FormControl,
-  FormControlLabel,
   FormHelperText,
   IconButton,
   InputAdornment,
@@ -28,11 +22,11 @@ import {
 } from "@mui/material";
 import * as yup from "yup";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { error } from "console";
 import { axiosApi } from "../tools/configuration/axios-config";
 import axios, { AxiosError } from "axios";
 import AppSnackbar from "../components/AppSnackbar";
 import { LoadingButton } from "@mui/lab";
+import { RegisterSuccessModal } from "../components/features/RegisterSuccessModal.component";
 
 type RegisterRequest = {
   username: string;
@@ -63,11 +57,12 @@ export const RegisterPage: FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
+  const [qrURI, setQrURI] = useState<string>("");
   const {
     setValue,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm({
     resolver: yupResolver(RegisterRequestValidator),
   });
@@ -76,10 +71,11 @@ export const RegisterPage: FC = () => {
     setLoading(true);
 
     axiosApi
-      .post("/api/auth/create-user", userRegisterRequest)
+      .post<{ qrURI: string }>("/api/auth/create-user", userRegisterRequest)
       .then((response) => {
-        if(response.status === 201) {
+        if (response.status === 201) {
           setSuccess(true);
+          setQrURI(response.data.qrURI);
         }
       })
       .catch((error) => {
@@ -91,7 +87,8 @@ export const RegisterPage: FC = () => {
         } else {
           setError("An unexpected error occurred.");
         }
-      }).finally(() => setLoading(false));
+      })
+      .finally(() => setLoading(false));
   }
 
   return (
@@ -101,20 +98,16 @@ export const RegisterPage: FC = () => {
         message={error}
         onClose={() => {
           setError(null);
-        }
-        }
+        }}
       />
-       <AppSnackbar
-        open={!!success}
-        message={'Successfuly created an account! Try to login'}
-        onClose={() => {
+      <RegisterSuccessModal
+        isOpen={success}
+        handleClose={() => {
           setSuccess(false);
           reset();
-          navigate('/login');
-        }
-        }
-        severity="success"
-        duration={2000}
+          navigate("/login");
+        }}
+        qrURI={qrURI}
       />
       <CssBaseline />
       <Grid
@@ -260,7 +253,7 @@ export const RegisterPage: FC = () => {
                 sx={{ mt: 3, mb: 2 }}
                 onClick={handleSubmit(sendRegisterRequest)}
               >
-                {!loading ? 'Sign Up' : 'Loading'}
+                {!loading ? "Sign Up" : "Loading"}
               </LoadingButton>
               <Grid container justifyContent="center">
                 <Grid item>

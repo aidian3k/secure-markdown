@@ -4,15 +4,12 @@ import ee.pw.security.securemarkdown.domain.user.data.UserFinderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -26,7 +23,7 @@ class AuthConfiguration {
 
 	@Bean
 	public PasswordEncoder configurePasswordEncoder() {
-		return new BCryptPasswordEncoder(16);
+		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
 
 	@Bean
@@ -41,23 +38,16 @@ class AuthConfiguration {
 
 	@Bean
 	public AuthenticationProvider configureAuthenticationProvider() {
-		DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+		TokenAuthenticationProvider tokenAuthenticationProvider = new TokenAuthenticationProvider();
 
-		daoAuthenticationProvider.setUserDetailsService(
+		tokenAuthenticationProvider.setUserDetailsService(
 			configureUserDetailsService()
 		);
-		daoAuthenticationProvider.setHideUserNotFoundExceptions(true);
-		daoAuthenticationProvider.setPasswordEncoder(configurePasswordEncoder());
-		daoAuthenticationProvider.setPreAuthenticationChecks(userDetailsChecker);
+		tokenAuthenticationProvider.setHideUserNotFoundExceptions(true);
+		tokenAuthenticationProvider.setPasswordEncoder(configurePasswordEncoder());
+		tokenAuthenticationProvider.setPreAuthenticationChecks(userDetailsChecker);
 
-		return daoAuthenticationProvider;
-	}
-
-	@Bean
-	public AuthenticationManager configureAuthManager(
-		AuthenticationConfiguration authenticationConfiguration
-	) throws Exception {
-		return authenticationConfiguration.getAuthenticationManager();
+		return tokenAuthenticationProvider;
 	}
 
 	@Bean

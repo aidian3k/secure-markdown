@@ -12,9 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -26,6 +23,10 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity(name = "users")
 @AllArgsConstructor
@@ -42,9 +43,6 @@ public class User extends AppUserDetails {
 
 	@Column(name = "username", nullable = false)
 	private String username;
-
-	@Column(name = "isUsingTwoFactorAuthentication", nullable = false)
-	private boolean isUsingTwoFactorAuthentication = true;
 
 	@OneToMany(
 		fetch = FetchType.EAGER,

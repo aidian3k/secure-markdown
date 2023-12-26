@@ -46,6 +46,9 @@ dependencies {
     implementation 'org.passay:passay:1.0'
     implementation 'com.google.guava:guava:32.1.2-jre'
     implementation 'io.vavr:vavr:0.10.4'
+    implementation 'dev.samstevens.totp:totp-spring-boot-starter:1.7.1'
+    implementation 'com.warrenstrange:googleauth:1.4.0'
+    implementation 'com.google.zxing:core:3.4.1'
 }
 
 dependencyManagement {

@@ -1,11 +1,12 @@
 package ee.pw.security.securemarkdown.application;
 
+import dev.samstevens.totp.exceptions.QrGenerationException;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordKeyRequest;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordRequest;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordService;
 import ee.pw.security.securemarkdown.domain.user.data.UserFacade;
 import ee.pw.security.securemarkdown.domain.user.dto.request.UserRegistrationRequest;
-import ee.pw.security.securemarkdown.domain.user.dto.response.UserDTO;
+import ee.pw.security.securemarkdown.domain.user.dto.response.UserRegistrationResponse;
 import io.vavr.control.Either;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +28,9 @@ class AuthenticationController {
 	private final ResetPasswordService resetPasswordService;
 
 	@PostMapping("/create-user")
-	public ResponseEntity<UserDTO> registerUserToApplication(
+	public ResponseEntity<UserRegistrationResponse> registerUserToApplication(
 		@RequestBody @Valid UserRegistrationRequest userRegistrationRequest
-	) {
+	) throws QrGenerationException {
 		return new ResponseEntity<>(
 			userFacade.registerUser(userRegistrationRequest),
 			HttpStatus.CREATED
@@ -40,7 +41,9 @@ class AuthenticationController {
 	public ResponseEntity<Void> handleUserResetPasswordRequest(
 		@RequestBody @Valid ResetPasswordKeyRequest resetPasswordKeyRequest
 	) {
-		resetPasswordService.sendEmailWithLinkToResetPassword(resetPasswordKeyRequest);
+		resetPasswordService.sendEmailWithLinkToResetPassword(
+			resetPasswordKeyRequest
+		);
 
 		return ResponseEntity.ok().build();
 	}
