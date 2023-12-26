@@ -40,10 +40,9 @@ public class TokenAuthenticationProvider extends DaoAuthenticationProvider {
 			)
 		) {
 			throw new BadCredentialsException(
-				messages.getMessage(
-					"AbstractUserDetailsAuthenticationProvider.badCredentials",
-					"Bad credentials"
-				)
+				this.messages.getMessage(
+						"AbstractUserDetailsAuthenticationProvider.badCredentials"
+					)
 			);
 		}
 	}

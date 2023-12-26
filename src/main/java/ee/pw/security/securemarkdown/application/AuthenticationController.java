@@ -1,6 +1,5 @@
 package ee.pw.security.securemarkdown.application;
 
-import dev.samstevens.totp.exceptions.QrGenerationException;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordKeyRequest;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordRequest;
 import ee.pw.security.securemarkdown.domain.resetpassword.ResetPasswordService;
@@ -30,7 +29,7 @@ class AuthenticationController {
 	@PostMapping("/create-user")
 	public ResponseEntity<UserRegistrationResponse> registerUserToApplication(
 		@RequestBody @Valid UserRegistrationRequest userRegistrationRequest
-	) throws QrGenerationException {
+	) {
 		return new ResponseEntity<>(
 			userFacade.registerUser(userRegistrationRequest),
 			HttpStatus.CREATED

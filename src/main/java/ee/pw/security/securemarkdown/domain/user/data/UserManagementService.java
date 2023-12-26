@@ -2,16 +2,12 @@ package ee.pw.security.securemarkdown.domain.user.data;
 
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
-import dev.samstevens.totp.code.HashingAlgorithm;
-import dev.samstevens.totp.exceptions.QrGenerationException;
-import dev.samstevens.totp.qr.QrData;
-import dev.samstevens.totp.qr.QrGenerator;
-import dev.samstevens.totp.qr.ZxingPngQrGenerator;
-import dev.samstevens.totp.util.Utils;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 import ee.pw.security.securemarkdown.domain.user.dto.request.UserRegistrationRequest;
 import ee.pw.security.securemarkdown.domain.user.dto.response.UserRegistrationResponse;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.domain.user.mapper.UserDTOMapper;
+import ee.pw.security.securemarkdown.infrastructure.security.SecurityTools;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,7 +23,7 @@ public class UserManagementService {
 
 	public UserRegistrationResponse registerUser(
 		UserRegistrationRequest userRegistrationRequest
-	) throws QrGenerationException {
+	) {
 		GoogleAuthenticator googleAuthenticator = new GoogleAuthenticator();
 		GoogleAuthenticatorKey googleAuthenticatorKey = googleAuthenticator.createCredentials();
 
@@ -39,19 +35,14 @@ public class UserManagementService {
 			.mfaSecret(googleAuthenticatorKey.getKey())
 			.build();
 		User savedUser = userRepository.save(user);
-		QrData qrData = new QrData.Builder()
-			.issuer("Secure-Markdown")
-			.algorithm(HashingAlgorithm.SHA256)
-			.digits(6)
-			.period(30)
-			.build();
-		QrGenerator qrGenerator = new ZxingPngQrGenerator();
+		String googleAuthenticatorQRGenerator = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
+			"Secure-Markdown",
+			savedUser.getEmail(),
+			googleAuthenticatorKey
+		);
 
 		return UserRegistrationResponse.build(
-			Utils.getDataUriForImage(
-				qrGenerator.generate(qrData),
-				qrGenerator.getImageMimeType()
-			),
+			SecurityTools.generateQRCode(googleAuthenticatorQRGenerator),
 			UserDTOMapper.toDto(savedUser)
 		);
 	}
