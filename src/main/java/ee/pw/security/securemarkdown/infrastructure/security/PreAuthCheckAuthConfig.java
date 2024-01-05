@@ -2,16 +2,16 @@ package ee.pw.security.securemarkdown.infrastructure.security;
 
 import ee.pw.security.securemarkdown.domain.loginaudit.data.LoginAuditService;
 import ee.pw.security.securemarkdown.domain.loginaudit.entity.LoginAudit;
-import ee.pw.security.securemarkdown.domain.user.data.UserRepository;
 import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.mail.MailService;
 import jakarta.mail.MessagingException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -23,7 +23,6 @@ public class PreAuthCheckAuthConfig {
 	private static final int MAXIMUM_NUMBER_OF_FAILED_LOGINS = 3;
 
 	private final LoginAuditService loginAuditService;
-	private final UserRepository userRepository;
 	private final MailService mailService;
 
 	@Bean

@@ -32,7 +32,7 @@ public class AppUserDetails implements UserDetails {
 	private String password;
 
 	@Column(name = "enabled")
-	private boolean isEnabled = true;
+	private boolean enabled = true;
 
 	@Column(name = "isUsingTwoFactorAuthentication", nullable = false)
 	@Password

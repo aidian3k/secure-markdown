@@ -33,6 +33,7 @@ public class UserManagementService {
 			.username(userRegistrationRequest.getUsername())
 			.password(passwordEncoder.encode(userRegistrationRequest.getPassword()))
 			.mfaSecret(googleAuthenticatorKey.getKey())
+			.enabled(true)
 			.build();
 		User savedUser = userRepository.save(user);
 		String googleAuthenticatorQRGenerator = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(

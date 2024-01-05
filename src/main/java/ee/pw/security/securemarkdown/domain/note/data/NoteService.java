@@ -14,13 +14,16 @@ import ee.pw.security.securemarkdown.domain.user.entity.User;
 import ee.pw.security.securemarkdown.infrastructure.exception.GenericAppException;
 import ee.pw.security.securemarkdown.infrastructure.exception.note.NoteNotFoundException;
 import ee.pw.security.securemarkdown.infrastructure.security.EncryptionTools;
-import java.time.LocalDateTime;
-import java.util.stream.Collectors;
+import io.vavr.Tuple3;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.owasp.encoder.Encode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,14 +69,16 @@ public class NoteService {
 		NoteCreationDTO noteCreationDTO,
 		User currentUser
 	) {
+		Tuple3<String, byte[], byte[]> encodedNoteInformation = EncryptionTools.encodeStringWithKeyWithAES(
+			noteCreationDTO.getContent(),
+			noteCreationDTO.getNotePassword()
+		);
+
 		return Note
 			.builder()
-			.content(
-				EncryptionTools.encodeStringWithKeyWithAES(
-					noteCreationDTO.getContent(),
-					noteCreationDTO.getNotePassword()
-				)
-			)
+			.content(encodedNoteInformation._1)
+			.iv(encodedNoteInformation._3)
+			.salt(encodedNoteInformation._2)
 			.title(noteCreationDTO.getTitle())
 			.noteVisibility(NoteVisibility.ENCRYPTED)
 			.notePassword(passwordEncoder.encode(noteCreationDTO.getNotePassword()))
@@ -119,6 +124,7 @@ public class NoteService {
 
 	@Transactional
 	public NoteDTO saveNoteAndReturnNoteDTO(Note noteToSave, User user) {
+		noteToSave.setContent(Encode.forHtml(noteToSave.getContent()));
 		Note savedNote = noteRepository.save(noteToSave);
 		user.getNotes().add(savedNote);
 		userFacade.saveUser(user);
@@ -153,7 +159,7 @@ public class NoteService {
 				.toBuilder()
 				.content(
 					EncryptionTools.decodeStringFromAESEncryption(
-						note.getContent(),
+						note,
 						noteViewDTO.getPassword()
 					)
 				)

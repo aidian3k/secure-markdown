@@ -30,6 +30,7 @@ public class TokenAuthenticationProvider extends DaoAuthenticationProvider {
 
 		TokenWebAuthenticationDetails authenticationDetails = (TokenWebAuthenticationDetails) authentication.getDetails();
 		AppUserDetails user = (AppUserDetails) userDetails;
+		super.getPreAuthenticationChecks().check(userDetails);
 		String mfaToken = user.getMfaSecret();
 		GoogleAuthenticator googleAuthenticator = new GoogleAuthenticator();
 
@@ -39,11 +40,7 @@ public class TokenAuthenticationProvider extends DaoAuthenticationProvider {
 				Integer.parseInt(authenticationDetails.getToken())
 			)
 		) {
-			throw new BadCredentialsException(
-				this.messages.getMessage(
-						"AbstractUserDetailsAuthenticationProvider.badCredentials"
-					)
-			);
+			throw new BadCredentialsException("Token is invalid");
 		}
 	}
 }

@@ -18,9 +18,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -31,6 +28,10 @@ import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity(name = "notes")
 @AllArgsConstructor
@@ -66,6 +67,12 @@ public class Note {
 	@Password
 	@Column(name = "note_password")
 	private String notePassword = null;
+
+	@Column(name = "content_salt", nullable = true)
+	private byte[] salt;
+
+	@Column(name = "secure_iv", nullable = true)
+	private byte[] iv;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@EqualsAndHashCode.Exclude

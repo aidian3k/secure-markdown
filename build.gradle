@@ -49,6 +49,7 @@ dependencies {
     implementation 'dev.samstevens.totp:totp-spring-boot-starter:1.7.1'
     implementation 'com.warrenstrange:googleauth:1.4.0'
     implementation 'com.google.zxing:core:3.4.1'
+    implementation 'org.owasp.encoder:encoder:1.2.2'
 }
 
 dependencyManagement {

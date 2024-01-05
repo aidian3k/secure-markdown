@@ -1,15 +1,17 @@
 package ee.pw.security.securemarkdown.infrastructure.security;
 
-import ee.pw.security.securemarkdown.domain.user.data.UserFinderService;
+import ee.pw.security.securemarkdown.domain.user.data.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsChecker;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -18,12 +20,35 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 @RequiredArgsConstructor
 class AuthConfiguration {
 
-	private final UserFinderService userFinderService;
+	private final UserRepository userRepository;
 	private final UserDetailsChecker userDetailsChecker;
 
 	@Bean
 	public PasswordEncoder configurePasswordEncoder() {
-		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		final int strength = 16;
+
+		return new BCryptPasswordEncoder(strength);
+	}
+
+	@Bean
+	public AuthenticationManager configureAuthenticationManager() {
+		return new ProviderManager(tokenAuthenticationProvider());
+	}
+
+	@Bean
+	public TokenAuthenticationProvider tokenAuthenticationProvider() {
+		TokenAuthenticationProvider tokenAuthenticationProvider = new TokenAuthenticationProvider();
+		tokenAuthenticationProvider.setUserDetailsService(configureUserDetailsService());
+		tokenAuthenticationProvider.setHideUserNotFoundExceptions(true);
+		tokenAuthenticationProvider.setPasswordEncoder(configurePasswordEncoder());
+		tokenAuthenticationProvider.setPreAuthenticationChecks(userDetailsChecker);
+
+		return tokenAuthenticationProvider;
+	}
+
+	@Bean
+	public TokenWebAuthenticationDetailsSource totpAuthenticationDetailsSource() {
+		return new TokenWebAuthenticationDetailsSource();
 	}
 
 	@Bean
@@ -33,21 +58,12 @@ class AuthConfiguration {
 
 	@Bean
 	public UserDetailsService configureUserDetailsService() {
-		return userFinderService::getUserByEmail;
-	}
-
-	@Bean
-	public AuthenticationProvider configureAuthenticationProvider() {
-		TokenAuthenticationProvider tokenAuthenticationProvider = new TokenAuthenticationProvider();
-
-		tokenAuthenticationProvider.setUserDetailsService(
-			configureUserDetailsService()
-		);
-		tokenAuthenticationProvider.setHideUserNotFoundExceptions(true);
-		tokenAuthenticationProvider.setPasswordEncoder(configurePasswordEncoder());
-		tokenAuthenticationProvider.setPreAuthenticationChecks(userDetailsChecker);
-
-		return tokenAuthenticationProvider;
+		return email ->
+			userRepository
+				.findByEmail(email)
+				.orElseThrow(() ->
+					new BadCredentialsException("User witch such email not found")
+				);
 	}
 
 	@Bean

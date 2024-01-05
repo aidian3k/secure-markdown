@@ -95,6 +95,7 @@ export const RegisterPage: FC = () => {
     <Grid container component="main" sx={{ height: "100vh" }}>
       <AppSnackbar
         open={!!error}
+        duration={10000}
         message={error}
         onClose={() => {
           setError(null);
