@@ -38,7 +38,9 @@ class AuthConfiguration {
 	@Bean
 	public TokenAuthenticationProvider tokenAuthenticationProvider() {
 		TokenAuthenticationProvider tokenAuthenticationProvider = new TokenAuthenticationProvider();
-		tokenAuthenticationProvider.setUserDetailsService(configureUserDetailsService());
+		tokenAuthenticationProvider.setUserDetailsService(
+			configureUserDetailsService()
+		);
 		tokenAuthenticationProvider.setHideUserNotFoundExceptions(true);
 		tokenAuthenticationProvider.setPasswordEncoder(configurePasswordEncoder());
 		tokenAuthenticationProvider.setPreAuthenticationChecks(userDetailsChecker);
@@ -68,13 +70,6 @@ class AuthConfiguration {
 
 	@Bean
 	public CsrfTokenRepository csrfTokenRepository() {
-		CookieCsrfTokenRepository cookieCsrfTokenRepository = new CookieCsrfTokenRepository();
-		cookieCsrfTokenRepository.setHeaderName("X-XSRF-TOKEN");
-		cookieCsrfTokenRepository.setCookieCustomizer(responseCookieBuilder -> {
-			responseCookieBuilder.httpOnly(false);
-			responseCookieBuilder.path("/");
-		});
-
-		return cookieCsrfTokenRepository;
+		return CookieCsrfTokenRepository.withHttpOnlyFalse();
 	}
 }

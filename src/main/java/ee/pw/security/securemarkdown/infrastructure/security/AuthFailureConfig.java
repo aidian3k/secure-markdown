@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 public class AuthFailureConfig {
 
 	private final LoginAuditService loginAuditService;
-	private static final int LOGIN_DELAY_TIME_IN_MS = 3000;
+	private static final int LOGIN_DELAY_TIME_IN_MS = 6000;
 	private static final String EXCEEDED_NUMBER_OF_TRIES_MESSAGE =
 		"Exceeded number of tries to login. Wait a moment!";
 

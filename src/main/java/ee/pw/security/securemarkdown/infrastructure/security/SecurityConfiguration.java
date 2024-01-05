@@ -15,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
@@ -37,16 +38,21 @@ public class SecurityConfiguration {
 			httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource);
 		});
 
-		// httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
-		// 	httpSecurityCsrfConfigurer.ignoringRequestMatchers(
-		// 		"/api/auth/login",
-		// 		"api/auth/create-user",
-		// 		"api/auth/reset-password",
-		// 		"api/auth/confirm-rest-password"
-		// 	);
-		// 	httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
-		// });
-		httpSecurity.csrf(AbstractHttpConfigurer::disable);
+		httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
+			CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+			// (optional) set null to opt out of deferred tokens
+			requestHandler.setCsrfRequestAttributeName(null);
+
+			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
+				"/api/auth/login",
+				"api/auth/create-user",
+				"api/auth/reset-password",
+				"api/auth/confirm-rest-password",
+				"api/auth/logout"
+			);
+			httpSecurityCsrfConfigurer.csrfTokenRepository(csrfTokenRepository);
+			httpSecurityCsrfConfigurer.csrfTokenRequestHandler(requestHandler);
+		});
 
 		httpSecurity.formLogin(httpSecurityFormLoginConfigurer -> {
 			httpSecurityFormLoginConfigurer.loginProcessingUrl("/api/auth/login");
@@ -57,6 +63,11 @@ public class SecurityConfiguration {
 				(
 					(request, response, authentication) -> {
 						loginAuditService.saveLoginAuthenticationLog(request, false);
+						csrfTokenRepository.saveToken(
+							csrfTokenRepository.generateToken(request),
+							request,
+							response
+						);
 						response.setStatus(HttpStatus.OK.value());
 					}
 				)
@@ -72,6 +83,7 @@ public class SecurityConfiguration {
 			httpSecurityLogoutConfigurer.clearAuthentication(true);
 			httpSecurityLogoutConfigurer.logoutUrl("/api/auth/logout").permitAll();
 			httpSecurityLogoutConfigurer.deleteCookies("JSESSIONID");
+			httpSecurityLogoutConfigurer.deleteCookies("XSRF-TOKEN");
 			httpSecurityLogoutConfigurer.logoutSuccessHandler(
 				(
 					(request, response, authentication) -> {

@@ -11,6 +11,7 @@ import java.util.List;
 
 @Configuration
 public class CorsConfig {
+
 	@Bean
 	@Primary
 	public CorsConfigurationSource configureCors() {
@@ -29,7 +30,12 @@ public class CorsConfig {
 			List.of("GET", "POST", "DELETE", "PATCH", "OPTIONS")
 		);
 		configuration.setAllowedHeaders(
-			List.of("Content-Type", "Access-Control-Allow-Credentials")
+			List.of(
+				"Content-Type",
+				"Access-Control-Allow-Credentials",
+				"x-xsrf-token",
+				"X-CSRF-TOKEN"
+			)
 		);
 		configuration.setMaxAge(3600L);
 		configuration.setAllowCredentials(true);
