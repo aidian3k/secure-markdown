@@ -96,31 +96,43 @@ export const NoteAddPage: React.FC = () => {
     const noteVisibility: NoteVisibility =
       getNoteVisibility(noteCreationRequest);
 
-    axiosApi
-      .post("/api/note/save-note", {
-        content: noteCreationRequest.content,
-        title: noteCreationRequest.title,
-        noteVisibility: noteVisibility.toString(),
-        notePassword: noteCreationRequest.password,
-      })
-      .then((result) => {
-        if (result.status === 201) {
-          setSuccess(true);
-        }
-      })
-      .catch((error) => {
-        if (axios.isAxiosError(error)) {
-          const axiosError: AxiosError = error as AxiosError;
-          if (axiosError.response && axiosError.response.status === 400) {
-            setError(JSON.stringify(axiosError.response.data));
+    axiosApi.get("/api/auth/csrf").then((tokenResponse) => {
+      const config = {
+        headers: {
+          "X-XSRF-TOKEN": tokenResponse.data.token,
+        },
+      };
+
+      axiosApi
+        .post(
+          "/api/note/save-note",
+          {
+            content: noteCreationRequest.content,
+            title: noteCreationRequest.title,
+            noteVisibility: noteVisibility.toString(),
+            notePassword: noteCreationRequest.password,
+          },
+          config
+        )
+        .then((result) => {
+          if (result.status === 201) {
+            setSuccess(true);
+          }
+        })
+        .catch((error) => {
+          if (axios.isAxiosError(error)) {
+            const axiosError: AxiosError = error as AxiosError;
+            if (axiosError.response && axiosError.response.status === 400) {
+              setError(JSON.stringify(axiosError.response.data));
+            } else {
+              setError("Error occurred when trying to login");
+            }
           } else {
             setError("Error occurred when trying to login");
           }
-        } else {
-          setError("Error occurred when trying to login");
-        }
-      })
-      .finally(() => setLoading(false));
+        })
+        .finally(() => setLoading(false));
+    });
   }
 
   return (

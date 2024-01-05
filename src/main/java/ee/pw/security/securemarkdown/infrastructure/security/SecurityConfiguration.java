@@ -40,7 +40,6 @@ public class SecurityConfiguration {
 
 		httpSecurity.csrf(httpSecurityCsrfConfigurer -> {
 			CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-			// (optional) set null to opt out of deferred tokens
 			requestHandler.setCsrfRequestAttributeName(null);
 
 			httpSecurityCsrfConfigurer.ignoringRequestMatchers(
